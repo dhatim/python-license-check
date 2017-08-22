@@ -1,0 +1,123 @@
+import pkg_resources 
+import requests
+import re
+from pip.req import parse_requirements
+from pip.download import PipSession
+from pip._vendor import pkg_resources
+import sys
+import license_list
+
+
+def get_packages_info():
+    regex_license = re.compile('License: (?P<license>.+)\n')
+    regex_classifier = re.compile('Classifier: License :: OSI Approved :: (?P<classifier>.+)\n')
+    
+    requirements = [pkg_resources.Requirement.parse(str(req.req)) for req
+                in parse_requirements('requirements.txt', session=PipSession()) if req.req != None]
+
+    transform = lambda dist: {
+        'name': dist.project_name,
+        'version': dist.version,
+        'location': dist.location,
+        'dependencies': list(
+            map(lambda dependency: dependency.project_name,
+                dist.requires())),
+        'license': get_license(dist),
+        'license_OSI_classifiers': get_license_OSI_classifiers(dist)
+    }
+
+    def get_license(dist):
+        if dist.has_metadata(dist.PKG_INFO):
+            metadata = dist.get_metadata(dist.PKG_INFO)
+            return regex_license.search(metadata).group('license')
+
+        return 'UNKNOWN'
+
+    def get_license_OSI_classifiers(dist):
+        if dist.has_metadata(dist.PKG_INFO):
+            metadata = dist.get_metadata(dist.PKG_INFO)
+            return regex_classifier.findall(metadata)
+
+        return None
+
+    packages = [transform(dist) for dist in pkg_resources.working_set.resolve(requirements)] 
+    # keep only unique values as there is maybe some duplicates
+    unique = []
+    [unique.append(item) for item in packages if item not in unique]
+    
+    return sorted(unique, key=(lambda item: item['name'].lower()))
+
+def partition(list, condition):
+    trues, falses = [], []
+    for x in list:
+        if condition(x):
+            trues.append(x)
+        else:
+            falses.append(x)
+    return trues, falses
+
+def get_forbidden_packages_based_on_licenses(pkg_info):
+    return partition(pkg_info, lambda pkg: pkg['license'].lower() in license_list.UNAUTHORIZED_LICENSES)
+
+def get_authorized_packages_based_on_licenses(pkg_info):
+    return partition(pkg_info, lambda pkg: pkg['license'].lower() in license_list.AUTHORIZED_LICENSES)
+
+def get_authorized_packages(pkg_info):
+    return partition(pkg_info, lambda pkg: is_authorzed_package(pkg))
+
+def is_authorzed_package(pkg):
+    license_classifiers = pkg['license_OSI_classifiers']
+    if license_classifiers is not None:
+        at_least_one_unauthorized = False
+        for license in license_classifiers:
+            if (license.lower() in license_list.UNAUTHORIZED_LICENSES):
+                at_least_one_unauthorized = True
+            if (license.lower() in license_list.AUTHORIZED_LICENSES):
+                return True
+        # if no license authorized but at least one unauthorized
+        if at_least_one_unauthorized:
+            return False
+    # if not found, lookup in AUTHORIZED_PACKAGES list    
+    return ((pkg['name'] in license_list.AUTHORIZED_PACKAGES) and (license_list.AUTHORIZED_PACKAGES[pkg['name']]==pkg['version']))
+
+def write_package(package):
+    sys.stdout.write('    {} ({}) : {} {}\n'.format(package['name'], package['version'], package['license'], package['license_OSI_classifiers']))
+
+def write_packages(packages):
+    for package in packages:
+        write_package(package)
+
+if __name__ == "__main__":
+    sys.stdout.write('gathering licenses...')
+    pkg_info = get_packages_info()
+    sys.stdout.write(str(len(pkg_info)) + ' packages and dependencies.\n')
+
+    sys.stdout.write('check forbidden packages based on licenses...')
+    forbidden, pkg_info = get_forbidden_packages_based_on_licenses(pkg_info)
+    if len(forbidden) > 0:
+        sys.stdout.write(str(len(forbidden)) + ' forbidden packages :\n')
+        write_packages(forbidden)
+    else:
+        sys.stdout.write('none');
+    sys.stdout.write('\n')
+    
+    sys.stdout.write('check authorized packages based on licenses...')
+    authorized, pkg_info = get_authorized_packages_based_on_licenses(pkg_info)
+    sys.stdout.write(str(len(authorized)) + ' packages.\n')
+
+
+    sys.stdout.write('check authorized packages...')
+    authorized, unknown = get_authorized_packages(pkg_info)
+    sys.stdout.write(str(len(authorized)) + ' packages.\n')
+
+    sys.stdout.write('check unknown licenses...')
+    if len(unknown) > 0:
+        sys.stdout.write(str(len(unknown)) + ' unknown packages :\n')
+        write_packages(unknown)
+    else:
+        sys.stdout.write('none');
+    sys.stdout.write('\n')
+
+    if (len(forbidden) > 0) or (len(unknown) > 0):
+        sys.exit(-1)
+
