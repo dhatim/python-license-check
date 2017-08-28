@@ -18,12 +18,12 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='python-license-check',
+    name='liccheck',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0b2',
+    version='0.1.3b1',
 
     description='Check python packages from requirement.txt and report issues',
     long_description=long_description,
@@ -66,7 +66,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=['liccheck'],
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
@@ -103,9 +103,9 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-    #entry_points={
-    #    'console_scripts': [
-    #        'sample=sample:main',
-    #    ],
-    #},
+    entry_points={
+        'console_scripts': [
+            'liccheck=liccheck.command_line:main'
+        ],
+    },
 )

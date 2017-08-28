@@ -5,15 +5,20 @@ from pip.req import parse_requirements
 from pip.download import PipSession
 from pip._vendor import pkg_resources
 import sys
-import license_list
+import argparse
+import configparser
 
+class Strategy:
+  AUTHORIZED_LICENSES = []
+  UNAUTHORIZED_LICENSES = []
+  AUTHORIZED_PACKAGES = []
 
-def get_packages_info():
+def get_packages_info(requirement_file):
     regex_license = re.compile('License: (?P<license>.+)\n')
     regex_classifier = re.compile('Classifier: License :: OSI Approved :: (?P<classifier>.+)\n')
     
     requirements = [pkg_resources.Requirement.parse(str(req.req)) for req
-                in parse_requirements('requirements.txt', session=PipSession()) if req.req != None]
+                in parse_requirements(requirement_file, session=PipSession()) if req.req != None]
 
     transform = lambda dist: {
         'name': dist.project_name,
@@ -56,29 +61,29 @@ def partition(list, condition):
             falses.append(x)
     return trues, falses
 
-def get_forbidden_packages_based_on_licenses(pkg_info):
-    return partition(pkg_info, lambda pkg: pkg['license'].lower() in license_list.UNAUTHORIZED_LICENSES)
+def get_forbidden_packages_based_on_licenses(pkg_info, strategy):
+    return partition(pkg_info, lambda pkg: pkg['license'].lower() in strategy.UNAUTHORIZED_LICENSES)
 
-def get_authorized_packages_based_on_licenses(pkg_info):
-    return partition(pkg_info, lambda pkg: pkg['license'].lower() in license_list.AUTHORIZED_LICENSES)
+def get_authorized_packages_based_on_licenses(pkg_info, strategy):
+    return partition(pkg_info, lambda pkg: pkg['license'].lower() in strategy.AUTHORIZED_LICENSES)
 
-def get_authorized_packages(pkg_info):
-    return partition(pkg_info, lambda pkg: is_authorzed_package(pkg))
+def get_authorized_packages(pkg_info, strategy):
+    return partition(pkg_info, lambda pkg: is_authorzed_package(pkg, strategy))
 
-def is_authorzed_package(pkg):
+def is_authorzed_package(pkg, strategy):
     license_classifiers = pkg['license_OSI_classifiers']
     if license_classifiers is not None:
         at_least_one_unauthorized = False
         for license in license_classifiers:
-            if (license.lower() in license_list.UNAUTHORIZED_LICENSES):
+            if (license.lower() in strategy.UNAUTHORIZED_LICENSES):
                 at_least_one_unauthorized = True
-            if (license.lower() in license_list.AUTHORIZED_LICENSES):
+            if (license.lower() in strategy.AUTHORIZED_LICENSES):
                 return True
         # if no license authorized but at least one unauthorized
         if at_least_one_unauthorized:
             return False
     # if not found, lookup in AUTHORIZED_PACKAGES list    
-    return ((pkg['name'] in license_list.AUTHORIZED_PACKAGES) and (license_list.AUTHORIZED_PACKAGES[pkg['name']]==pkg['version']))
+    return ((pkg['name'] in strategy.AUTHORIZED_PACKAGES) and (strategy.AUTHORIZED_PACKAGES[pkg['name']]==pkg['version']))
 
 def write_package(package):
     sys.stdout.write('    {} ({}) : {} {}\n'.format(package['name'], package['version'], package['license'], package['license_OSI_classifiers']))
@@ -87,13 +92,13 @@ def write_packages(packages):
     for package in packages:
         write_package(package)
 
-if __name__ == "__main__":
+def process(requirement_file, strategy):
     sys.stdout.write('gathering licenses...')
-    pkg_info = get_packages_info()
+    pkg_info = get_packages_info(requirement_file)
     sys.stdout.write(str(len(pkg_info)) + ' packages and dependencies.\n')
 
     sys.stdout.write('check forbidden packages based on licenses...')
-    forbidden, pkg_info = get_forbidden_packages_based_on_licenses(pkg_info)
+    forbidden, pkg_info = get_forbidden_packages_based_on_licenses(pkg_info, strategy)
     if len(forbidden) > 0:
         sys.stdout.write(str(len(forbidden)) + ' forbidden packages :\n')
         write_packages(forbidden)
@@ -102,12 +107,12 @@ if __name__ == "__main__":
     sys.stdout.write('\n')
     
     sys.stdout.write('check authorized packages based on licenses...')
-    authorized, pkg_info = get_authorized_packages_based_on_licenses(pkg_info)
+    authorized, pkg_info = get_authorized_packages_based_on_licenses(pkg_info, strategy)
     sys.stdout.write(str(len(authorized)) + ' packages.\n')
 
 
     sys.stdout.write('check authorized packages...')
-    authorized, unknown = get_authorized_packages(pkg_info)
+    authorized, unknown = get_authorized_packages(pkg_info, strategy)
     sys.stdout.write(str(len(authorized)) + ' packages.\n')
 
     sys.stdout.write('check unknown licenses...')
@@ -119,5 +124,28 @@ if __name__ == "__main__":
     sys.stdout.write('\n')
 
     if (len(forbidden) > 0) or (len(unknown) > 0):
-        sys.exit(-1)
+        return -1
+    return 0
+
+def read_strategy(strategy_file):
+    config = configparser.ConfigParser()
+    config.read(strategy_file)
+    strategy =  Strategy()
+    strategy.AUTHORIZED_LICENSES = list(filter(None, config['Licenses']['authorized_licenses'].lower().split("\n")))
+    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config['Licenses']['unauthorized_licenses'].lower().split("\n")))
+    strategy.AUTHORIZED_PACKAGES = config['Authorized Packages']
+    return strategy
+
+def main():  
+    parser = argparse.ArgumentParser(description='Check license of packages and there dependencies.')
+    parser.add_argument('-s', '--sfile', dest='strategy_ini_file', help='strategy ini file', required=True)
+    parser.add_argument('-r', '--rfile', dest='requirement_txt_file', help='path/to/requirement.txt file', nargs='?', default='./requirements.txt')
+    args = parser.parse_args()
+
+    strategy = read_strategy(args.strategy_ini_file)
+    sys.exit(process(args.requirement_txt_file, strategy))
+
+
+if __name__ == "__main__":
+    main()
 
