@@ -31,7 +31,7 @@ liccheck will read a the required.txt, and check packages agains strategy define
 If the file is not specified on command line, it will lookup for required.txt in current folder.
 You have to setup an ini file with authorized license list, unauthorized license list, authorized package list.
 
-Here is an example:
+Here is an example of startegy:
 ::
 
 	# Authorized and unauthorized licenses in LOWER CASE
@@ -62,9 +62,28 @@ Here is an example:
 	uuid: 1.30    
 
 
+For demo purpose, let's say your requirement.txt file contains this:
 ::
 
-    $ python -m license_check -s my_strategy.ini -r my_project/required.txt
+	Flask>=0.12.1
+	flask_restful
+	jsonify
+	psycopg2>=2.7.1
+	nose
+	scipy
+	scikit-learn
+	pandas
+	numpy
+	argparse
+	uuid
+	sqlbuilder
+	proboscis
+	pyyaml>=3.12
+
+The excution will output this:
+::
+
+    $ liccheck -s my_strategy.ini -r my_project/required.txt
     gathering licenses...23 packages and dependencies.
     check forbidden packages based on licenses...none
     check authorized packages based on licenses...19 packages.
