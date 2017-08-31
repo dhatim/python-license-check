@@ -85,23 +85,38 @@ def is_authorzed_package(pkg, strategy):
     # if not found, lookup in AUTHORIZED_PACKAGES list    
     return ((pkg['name'] in strategy.AUTHORIZED_PACKAGES) and (strategy.AUTHORIZED_PACKAGES[pkg['name']]==pkg['version']))
 
-def write_package(package):
-    sys.stdout.write('    {} ({}) : {} {}\n'.format(package['name'], package['version'], package['license'], package['license_OSI_classifiers']))
+def find_parents(package, all):
+    parents = [p['name'] for p in all if package in p['dependencies']]  
+    if len(parents) == 0:
+        return [package]
+    dependency_trees = [];
+    for parent in parents:      
+        for dependencies in find_parents(parent, all):
+            dependency_trees.append(package + " << " + dependencies)
+    return dependency_trees
 
-def write_packages(packages):
+def write_package(package, all):
+    dependency_branchs = find_parents(package['name'], all)
+    sys.stdout.write('    {} ({}) : {} {} \n'.format(package['name'], package['version'], package['license'], package['license_OSI_classifiers']))
+    sys.stdout.write('      dependencye(s):\n'); 
+    for dependency_branch in dependency_branchs:
+        sys.stdout.write('          {}\n'.format(dependency_branch));
+
+def write_packages(packages, all):
     for package in packages:
-        write_package(package)
+        write_package(package, all)
 
 def process(requirement_file, strategy):
     sys.stdout.write('gathering licenses...')
     pkg_info = get_packages_info(requirement_file)
+    all = list(pkg_info)
     sys.stdout.write(str(len(pkg_info)) + ' packages and dependencies.\n')
 
     sys.stdout.write('check forbidden packages based on licenses...')
     forbidden, pkg_info = get_forbidden_packages_based_on_licenses(pkg_info, strategy)
     if len(forbidden) > 0:
         sys.stdout.write(str(len(forbidden)) + ' forbidden packages :\n')
-        write_packages(forbidden)
+        write_packages(forbidden, all)
     else:
         sys.stdout.write('none');
     sys.stdout.write('\n')
@@ -118,7 +133,7 @@ def process(requirement_file, strategy):
     sys.stdout.write('check unknown licenses...')
     if len(unknown) > 0:
         sys.stdout.write(str(len(unknown)) + ' unknown packages :\n')
-        write_packages(unknown)
+        write_packages(unknown, all)
     else:
         sys.stdout.write('none');
     sys.stdout.write('\n')

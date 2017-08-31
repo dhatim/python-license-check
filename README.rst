@@ -90,6 +90,23 @@ The excution will output this:
     check authorized packages...4 packages.
     check unknown licenses...none
 
+If some dependecies are unknown or are not matching strategy, the output will be something as:
+::
+
+    $ liccheck -s my_strategy.ini -r my_project/required.txt
+	gathering licenses...32 packages and dependencies.
+	check forbidden packages based on licenses...1 forbidden packages :
+	    Unidecode (0.4.21) : GPL ['GNU General Public License v2 or later (GPLv2+)']
+	      dependencye(s):
+	          Unidecode << python-slugify << yoyo-migrations
+
+	check authorized packages based on licenses...24 packages.
+	check authorized packages...6 packages.
+	check unknown licenses...1 unknown packages :
+	    feedparser (5.2.1) : UNKNOWN []
+	      dependencye(s):
+	          feedparser
+
 Licensing
 =========
 
