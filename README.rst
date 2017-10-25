@@ -10,9 +10,9 @@ You can define a list of authorized licenses, authorized packages,
 unauthorized licenses.
 
 The tool will check the requirement.txt files, check packages and their
-dependencies and return an error if some packages are not compliante
-against the strategy. A package is considered as not compliant when it's license 
-is in unauthorized license list or is unknown. A package is considered as compliant when it's 
+dependencies and return an error if some packages are not compliant
+against the strategy. A package is considered as not compliant when its license 
+is in the unauthorized license list or is unknown. A package is considered as compliant when its 
 license is in authorized license list, or if the package is itself in the list of
 authorized packages.
 
@@ -27,11 +27,11 @@ How to install
 How to use
 ==========
 
-liccheck will read a the required.txt, and check packages agains strategy defined in ini file.
-If the file is not specified on command line, it will lookup for required.txt in current folder.
-You have to setup an ini file with authorized license list, unauthorized license list, authorized package list.
+liccheck will read the requirement.txt and check packages agains a strategy defined in the ini file.
+If the file is not specified on command line, it will lookup for requirement.txt in the current folder.
+You have to setup an ini file with an authorized license list, unauthorized license list, authorized package list.
 
-Here is an example of startegy:
+Here is an example of a strategy:
 ::
 
 	# Authorized and unauthorized licenses in LOWER CASE
@@ -80,7 +80,7 @@ For demo purpose, let's say your requirement.txt file contains this:
 	proboscis
 	pyyaml>=3.12
 
-The excution will output this:
+The execution will output this:
 ::
 
     $ liccheck -s my_strategy.ini -r my_project/required.txt
@@ -90,7 +90,7 @@ The excution will output this:
     check authorized packages...4 packages.
     check unknown licenses...none
 
-If some dependecies are unknown or are not matching strategy, the output will be something as:
+If some dependencies are unknown or are not matching strategy, the output will be something like:
 ::
 
     $ liccheck -s my_strategy.ini -r my_project/required.txt
