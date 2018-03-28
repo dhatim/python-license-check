@@ -1,5 +1,8 @@
 import argparse
 import configparser
+import collections
+import functools
+import enum
 import re
 import sys
 
@@ -15,6 +18,12 @@ class Strategy:
     AUTHORIZED_PACKAGES = []
 
 
+class Reason(enum.Enum):
+    OK = 'OK'
+    UNAUTHORIZED = 'UNAUTHORIZED'
+    UNKNOWN = 'UNKNOWN'
+
+
 def get_packages_info(requirement_file):
     regex_license = re.compile('License: (?P<license>.+)\n')
     regex_classifier = re.compile('Classifier: License :: OSI Approved :: (?P<classifier>.+)\n')
@@ -22,30 +31,31 @@ def get_packages_info(requirement_file):
     requirements = [pkg_resources.Requirement.parse(str(req.req)) for req
                     in parse_requirements(requirement_file, session=PipSession()) if req.req is not None]
 
-    transform = lambda dist: {
-        'name': dist.project_name,
-        'version': dist.version,
-        'location': dist.location,
-        'dependencies': list(
-            map(lambda dependency: dependency.project_name,
-                dist.requires())),
-        'license': get_license(dist),
-        'license_OSI_classifiers': get_license_OSI_classifiers(dist)
-    }
+    def transform(dist):
+        licenses = get_license(dist) + get_license_OSI_classifiers(dist)
+        return {
+            'name': dist.project_name,
+            'version': dist.version,
+            'location': dist.location,
+            'dependencies': list(
+                map(lambda dependency: dependency.project_name,
+                    dist.requires())),
+            'licenses': licenses,
+        }
 
     def get_license(dist):
         if dist.has_metadata(dist.PKG_INFO):
             metadata = dist.get_metadata(dist.PKG_INFO)
-            return regex_license.search(metadata).group('license')
+            return [regex_license.search(metadata).group('license')]
 
-        return 'UNKNOWN'
+        return []
 
     def get_license_OSI_classifiers(dist):
         if dist.has_metadata(dist.PKG_INFO):
             metadata = dist.get_metadata(dist.PKG_INFO)
             return regex_classifier.findall(metadata)
 
-        return None
+        return []
 
     packages = [transform(dist) for dist in pkg_resources.working_set.resolve(requirements)]
     # keep only unique values as there is maybe some duplicates
@@ -55,43 +65,27 @@ def get_packages_info(requirement_file):
     return sorted(unique, key=(lambda item: item['name'].lower()))
 
 
-def partition(list_, condition):
-    trues, falses = [], []
-    for x in list_:
-        if condition(x):
-            trues.append(x)
-        else:
-            falses.append(x)
-    return trues, falses
+def check_package(strategy, pkg):
+    whitelisted = (
+        pkg['name'] in strategy.AUTHORIZED_PACKAGES and
+        strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
+    )
+    if whitelisted:
+        return Reason.OK
 
+    at_least_one_unauthorized = False
+    for license in pkg['licenses']:
+        lower = license.lower()
+        if lower in strategy.UNAUTHORIZED_LICENSES:
+            at_least_one_unauthorized = True
+        if lower in strategy.AUTHORIZED_LICENSES:
+            return Reason.OK
 
-def get_forbidden_packages_based_on_licenses(pkg_info, strategy):
-    return partition(pkg_info, lambda pkg: pkg['license'].lower() in strategy.UNAUTHORIZED_LICENSES)
+    # if no license authorized but at least one unauthorized
+    if at_least_one_unauthorized:
+        return Reason.UNAUTHORIZED
 
-
-def get_authorized_packages_based_on_licenses(pkg_info, strategy):
-    return partition(pkg_info, lambda pkg: pkg['license'].lower() in strategy.AUTHORIZED_LICENSES)
-
-
-def get_authorized_packages(pkg_info, strategy):
-    return partition(pkg_info, lambda pkg: is_authorized_package(pkg, strategy))
-
-
-def is_authorized_package(pkg, strategy):
-    license_classifiers = pkg['license_OSI_classifiers']
-    if license_classifiers is not None:
-        at_least_one_unauthorized = False
-        for license in license_classifiers:
-            if license.lower() in strategy.UNAUTHORIZED_LICENSES:
-                at_least_one_unauthorized = True
-            if license.lower() in strategy.AUTHORIZED_LICENSES:
-                return True
-        # if no license authorized but at least one unauthorized
-        if at_least_one_unauthorized:
-            return False
-    # if not found, lookup in AUTHORIZED_PACKAGES list
-    return (pkg['name'] in strategy.AUTHORIZED_PACKAGES) \
-           and (strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version'])
+    return Reason.UNKNOWN
 
 
 def find_parents(package, all):
@@ -107,8 +101,8 @@ def find_parents(package, all):
 
 def write_package(package, all):
     dependency_branchs = find_parents(package['name'], all)
-    print('    {} ({}) : {} {} \n'.format(package['name'], package['version'], package['license'],
-                                          package['license_OSI_classifiers']))
+    licenses = package['licenses'] or 'UNKNOWN'
+    print('    {} ({}) : {} \n'.format(package['name'], package['version'], licenses))
     print('      dependenc{}:\n'.format('y' if len(dependency_branchs)<1 else 'ies'))
     for dependency_branch in dependency_branchs:
         print('          {}\n'.format(dependency_branch))
@@ -118,41 +112,42 @@ def write_packages(packages, all):
     for package in packages:
         write_package(package, all)
 
+def group_by(items, key):
+    res = collections.defaultdict(list)
+    for item in items:
+        res[key(item)].append(item)
+
+    return res
+
 
 def process(requirement_file, strategy):
     print('gathering licenses...')
     pkg_info = get_packages_info(requirement_file)
     all = list(pkg_info)
     print(str(len(pkg_info)) + ' packages and dependencies.\n')
+    groups = group_by(pkg_info, functools.partial(check_package, strategy))
+    ret = 0
 
-    print('check forbidden packages based on licenses...')
-    forbidden, pkg_info = get_forbidden_packages_based_on_licenses(pkg_info, strategy)
-    if len(forbidden) > 0:
-        print(str(len(forbidden)) + ' forbidden packages :\n')
-        write_packages(forbidden, all)
-    else:
-        print('none')
-    print('\n')
+    def format(l):
+        return '{} packages.\n'.format(len(l))
 
-    print('check authorized packages based on licenses...')
-    authorized, pkg_info = get_authorized_packages_based_on_licenses(pkg_info, strategy)
-    print(str(len(authorized)) + ' packages.\n')
+    if groups[Reason.OK]:
+        print('check authorized packages...')
+        print(format(groups[Reason.OK]))
 
-    print('check authorized packages...')
-    authorized, unknown = get_authorized_packages(pkg_info, strategy)
-    print(str(len(authorized)) + ' packages.\n')
+    if groups[Reason.UNAUTHORIZED]:
+        print('check unauthorized packages...')
+        print(format(groups[Reason.UNAUTHORIZED]))
+        write_packages(groups[Reason.UNAUTHORIZED], all)
+        ret = -1
 
-    print('check unknown licenses...')
-    if len(unknown) > 0:
-        print(str(len(unknown)) + ' unknown packages :\n')
-        write_packages(unknown, all)
-    else:
-        print('none')
-    print('\n')
+    if groups[Reason.UNKNOWN]:
+        print('check unknown packages...')
+        print(format(groups[Reason.UNKNOWN]))
+        write_packages(groups[Reason.UNKNOWN], all)
+        ret = -1
 
-    if (len(forbidden) > 0) or (len(unknown) > 0):
-        return -1
-    return 0
+    return ret
 
 
 def read_strategy(strategy_file):
