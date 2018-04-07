@@ -1,8 +1,8 @@
 import argparse
-import configparser
 import collections
-import functools
+import configparser
 import enum
+import functools
 import re
 import sys
 
@@ -25,8 +25,8 @@ class Reason(enum.Enum):
 
 
 def get_packages_info(requirement_file):
-    regex_license = re.compile('License: (?P<license>.+)\n')
-    regex_classifier = re.compile('Classifier: License :: OSI Approved :: (?P<classifier>.+)\n')
+    regex_license = re.compile(r'License: (?P<license>[^\r\n]+)\r?\n')
+    regex_classifier = re.compile(r'Classifier: License :: OSI Approved :: (?P<classifier>[^\r\n]+)\r?\n')
 
     requirements = [pkg_resources.Requirement.parse(str(req.req)) for req
                     in parse_requirements(requirement_file, session=PipSession()) if req.req is not None]
@@ -37,9 +37,7 @@ def get_packages_info(requirement_file):
             'name': dist.project_name,
             'version': dist.version,
             'location': dist.location,
-            'dependencies': list(
-                map(lambda dependency: dependency.project_name,
-                    dist.requires())),
+            'dependencies': [dependency.project_name for dependency in dist.requires()],
             'licenses': licenses,
         }
 
@@ -58,7 +56,7 @@ def get_packages_info(requirement_file):
         return []
 
     packages = [transform(dist) for dist in pkg_resources.working_set.resolve(requirements)]
-    # keep only unique values as there is maybe some duplicates
+    # keep only unique values as there are maybe some duplicates
     unique = []
     [unique.append(item) for item in packages if item not in unique]
 
@@ -67,8 +65,8 @@ def get_packages_info(requirement_file):
 
 def check_package(strategy, pkg):
     whitelisted = (
-        pkg['name'] in strategy.AUTHORIZED_PACKAGES and
-        strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
+            pkg['name'] in strategy.AUTHORIZED_PACKAGES and
+            strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
     )
     if whitelisted:
         return Reason.OK
@@ -100,17 +98,18 @@ def find_parents(package, all):
 
 
 def write_package(package, all):
-    dependency_branchs = find_parents(package['name'], all)
+    dependency_branches = find_parents(package['name'], all)
     licenses = package['licenses'] or 'UNKNOWN'
-    print('    {} ({}) : {} \n'.format(package['name'], package['version'], licenses))
-    print('      dependenc{}:\n'.format('y' if len(dependency_branchs)<1 else 'ies'))
-    for dependency_branch in dependency_branchs:
-        print('          {}\n'.format(dependency_branch))
+    print('    {} ({}): {}'.format(package['name'], package['version'], licenses))
+    print('      dependenc{}:'.format('y' if len(dependency_branches) <= 1 else 'ies'))
+    for dependency_branch in dependency_branches:
+        print('          {}'.format(dependency_branch))
 
 
 def write_packages(packages, all):
     for package in packages:
         write_package(package, all)
+
 
 def group_by(items, key):
     res = collections.defaultdict(list)
@@ -124,12 +123,12 @@ def process(requirement_file, strategy):
     print('gathering licenses...')
     pkg_info = get_packages_info(requirement_file)
     all = list(pkg_info)
-    print(str(len(pkg_info)) + ' packages and dependencies.\n')
+    print('{} package{} and dependencies.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's'))
     groups = group_by(pkg_info, functools.partial(check_package, strategy))
     ret = 0
 
     def format(l):
-        return '{} packages.\n'.format(len(l))
+        return '{} package{}.'.format(len(l), '' if len(l) <= 1 else 's')
 
     if groups[Reason.OK]:
         print('check authorized packages...')
@@ -154,8 +153,8 @@ def read_strategy(strategy_file):
     config = configparser.ConfigParser()
     config.read(strategy_file)
     strategy = Strategy()
-    strategy.AUTHORIZED_LICENSES = list(filter(None, config['Licenses']['authorized_licenses'].lower().split("\n")))
-    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config['Licenses']['unauthorized_licenses'].lower().split("\n")))
+    strategy.AUTHORIZED_LICENSES = list(filter(None, config['Licenses']['authorized_licenses'].lower().split('\n')))
+    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config['Licenses']['unauthorized_licenses'].lower().split('\n')))
     strategy.AUTHORIZED_PACKAGES = config['Authorized Packages']
     return strategy
 
