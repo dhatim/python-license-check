@@ -11,7 +11,7 @@ def test_parse_arguments():
 
 
 def test_read_strategy():
-    args = parse_args(['--sfile', '../license_strategy.ini'])
+    args = parse_args(['--sfile', 'license_strategy.ini'])
     strategy = read_strategy(args.strategy_ini_file)
     assert len(strategy.AUTHORIZED_LICENSES) > 0
     assert len(strategy.AUTHORIZED_PACKAGES) > 0
@@ -19,5 +19,5 @@ def test_read_strategy():
 
 
 def test_run():
-    args = parse_args(['--sfile', '../license_strategy.ini', '--rfile', '../requirements.txt'])
+    args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt'])
     run(args)
