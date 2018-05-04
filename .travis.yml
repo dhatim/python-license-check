@@ -5,7 +5,7 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - pytest
+  - python -m pytest
 deploy:
   provider: pypi
   user: Dev-Oss
