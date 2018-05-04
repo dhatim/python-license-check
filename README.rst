@@ -1,5 +1,7 @@
 .. image:: https://badge.fury.io/py/liccheck.svg
     :target: https://badge.fury.io/py/liccheck
+.. image:: https://travis-ci.org/dhatim/python-license-check.svg?branch=master
+    :target: https://travis-ci.org/dhatim/python-license-check
 
 Python License Checker
 ======================
