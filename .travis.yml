@@ -1,0 +1,13 @@
+language: python
+python:
+- '3.5'
+- '3.6'
+install:
+- pip install -r requirements.txt
+deploy:
+  provider: pypi
+  user: Dev-Oss
+  password:
+    secure: aCnN1HD76TiQpibR0Q8RV/wo4bGN4CiQoeez1+Y+pI7shNu9PzLp9E+0p0a8qVxEa57F07sUFOrgqW8Wp7lXbFFXiy2b0YLRuk3rJDJ66RYCvQGuPaBufQ4w55XuVPrlST+wqkCYswwpZ0YXexxMAcnBy8OcpjCG44KgycUH54m/WYGCqXRFpouVG0F9b4f8tUQyedC7A73tauqkjBtf4lAXrOTJ693Thers+RoUYvKdfOwL1y9p4FXoJ+9WTOppNmh5KjsXkqkDRwa4zYKqIdNxtwIPMf0kvPqSHVqisXqStsGmyrEGpSkHsOTaI787TGoduvRPcPhuiK3i75DDmr3hmTPAXOCh913TvhKgFaYkNVTLfWAYdiYm5Hqo2q8qZwC9P6hQMdHeY8Ebq0+jJn4kEHxWPLXG53wqi2tbX9L0LUDWn3ztF1QxVEG8PQklVz+Igd6PE0ATa1zG2V5I69o0lU6ZRexnVLLs4X4FNwYLkgCdnzXjBgj/Y82d8BA467A2G4fny6IFKw73uJ0bLHsITNLdnGTpBl4PVcmpkOamh5joUDdQC4wSAO9NCXMjWr7QxzJ3kVGslyzuho3lqlm3sowhvOw8Z9uNflnGXdMOtY8DZ/UlKf7vPOzP74IACOMhCLBBKX9VyM4L1EqWe0szDhKOf0GGgHLCvQ3+2Ok=
+  on:
+    tags: true
