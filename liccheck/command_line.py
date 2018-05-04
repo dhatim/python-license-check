@@ -7,6 +7,7 @@ import re
 import sys
 
 import pkg_resources
+
 try:
     from pip._internal.download import PipSession
 except ImportError:
@@ -165,15 +166,22 @@ def read_strategy(strategy_file):
     return strategy
 
 
-def main():
+def parse_args(args):
     parser = argparse.ArgumentParser(description='Check license of packages and there dependencies.')
     parser.add_argument('-s', '--sfile', dest='strategy_ini_file', help='strategy ini file', required=True)
     parser.add_argument('-r', '--rfile', dest='requirement_txt_file', help='path/to/requirement.txt file', nargs='?',
                         default='./requirements.txt')
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
+
+def run(args):
     strategy = read_strategy(args.strategy_ini_file)
-    sys.exit(process(args.requirement_txt_file, strategy))
+    return process(args.requirement_txt_file, strategy)
+
+
+def main():
+    args = parse_args(sys.argv[1:])
+    sys.exit(run(args))
 
 
 if __name__ == "__main__":
