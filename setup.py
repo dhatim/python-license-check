@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.3',
+    version='0.2.0',
 
     description='Check python packages from requirement.txt and report issues',
     long_description=long_description,
@@ -33,7 +33,7 @@ setup(
 
     # Author details
     author='Dhatim',
-    author_email='msauvee@dhatim.com',
+    author_email='dev-oss@dhatim.com',
 
     # Choose your license
     license='Apache Software License',
@@ -56,9 +56,8 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6'
     ],
 
     # What does your project relate to?
@@ -78,7 +77,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['argparse', 'configparser'],
 
-    python_requires='>=3',
+    python_requires='>=3.5',
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
