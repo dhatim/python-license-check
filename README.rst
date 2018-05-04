@@ -1,3 +1,6 @@
+.. image:: https://badge.fury.io/py/liccheck.svg
+    :target: https://badge.fury.io/py/liccheck
+
 Python License Checker
 ======================
 
