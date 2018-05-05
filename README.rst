@@ -11,15 +11,15 @@ Check python packages listed in a ``requirements.txt`` file and report license i
 About
 =====
 
-You can define a list of authorized licenses, authorized packages,
-unauthorized licenses.
+You can define a list of authorized licenses, unauthorized licenses and authorized packages.
 
 The tool will check the ``requirements.txt`` file, check packages and their
 dependencies and return an error if some packages are not compliant
-against the given strategy. A package is considered as not compliant when its license 
-is in the unauthorized license list or is unknown. A package is considered as compliant when its 
-license is in authorized license list, or if the package is itself in the list of
-authorized packages.
+against the given strategy.
+
+A package is considered as not compliant when its license is in the unauthorized license list or is unknown.
+A package is considered as compliant when its license is in authorized license list, or if the package
+is in the list of authorized packages.
 
 How to install
 ==============
