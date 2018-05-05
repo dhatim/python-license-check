@@ -6,7 +6,7 @@
 Python License Checker
 ======================
 
-Check python packages from requirement.txt and report license issues.
+Check python packages listed in a ``requirements.txt`` file and report license issues.
 
 About
 =====
@@ -14,9 +14,9 @@ About
 You can define a list of authorized licenses, authorized packages,
 unauthorized licenses.
 
-The tool will check the requirement.txt files, check packages and their
+The tool will check the ``requirements.txt`` file, check packages and their
 dependencies and return an error if some packages are not compliant
-against the strategy. A package is considered as not compliant when its license 
+against the given strategy. A package is considered as not compliant when its license 
 is in the unauthorized license list or is unknown. A package is considered as compliant when its 
 license is in authorized license list, or if the package is itself in the list of
 authorized packages.
@@ -32,11 +32,11 @@ How to install
 How to use
 ==========
 
-liccheck will read the requirement.txt and check packages agains a strategy defined in the ini file.
-If the file is not specified on command line, it will lookup for requirement.txt in the current folder.
-You have to setup an ini file with an authorized license list, unauthorized license list, authorized package list.
+``liccheck`` will read the ``requirements.txt`` and verify compliance of packages against a strategy defined in the ``ini`` file.
+If the file is not specified on command line, it will search for ``requirements.txt`` in the current folder.
+You have to setup an ``ini`` file with an authorized license list, unauthorized license list and authorized package list.
 
-Here is an example of a strategy:
+Here is an example of a ``strategy.ini`` file:
 ::
 
 	# Authorized and unauthorized licenses in LOWER CASE
@@ -67,7 +67,7 @@ Here is an example of a strategy:
 	uuid: 1.30    
 
 
-For demo purpose, let's say your requirement.txt file contains this:
+For demo purpose, let's say your ``requirements.txt`` file contains this:
 ::
 
 	Flask>=0.12.1
@@ -95,10 +95,10 @@ The execution will output this:
     check authorized packages...4 packages.
     check unknown licenses...none
 
-If some dependencies are unknown or are not matching strategy, the output will be something like:
+If some dependencies are unknown or are not matching the strategy, the output will be something like:
 ::
 
-    $ liccheck -s my_strategy.ini -r my_project/required.txt
+    $ liccheck -s my_strategy.ini -r my_project/requirements.txt
 	gathering licenses...32 packages and dependencies.
 	check forbidden packages based on licenses...1 forbidden packages :
 	    Unidecode (0.4.21) : GPL ['GNU General Public License v2 or later (GPLv2+)']
