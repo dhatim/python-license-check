@@ -1,10 +1,20 @@
 language: python
-python:
-- '3.6'
+matrix:
+  include:
+    - python: "2.7"
+    - python: "3.5"
+    - python: "3.6"
+    - python: "3.7"
+      dist: xenial
+      sudo: true
+    - python: "3.4"
+      dist: trusty
 install:
+- pip install -U pip setuptools wheel
 - pip install -r requirements.txt
+- pip install -r test-requirements.txt
 script:
-- python -m pytest
+- python -m pytest tests
 deploy:
   provider: pypi
   user: Dev-Oss
