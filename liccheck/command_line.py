@@ -163,9 +163,11 @@ def read_strategy(strategy_file):
     config = ConfigParser()
     config.read(strategy_file)
     strategy = Strategy()
-    strategy.AUTHORIZED_LICENSES = list(filter(None, config['Licenses']['authorized_licenses'].lower().split('\n')))
-    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config['Licenses']['unauthorized_licenses'].lower().split('\n')))
-    strategy.AUTHORIZED_PACKAGES = config['Authorized Packages']
+    strategy.AUTHORIZED_LICENSES = list(filter(None, config.get('Licenses', 'authorized_licenses').lower().split('\n')))
+    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config.get('Licenses', 'unauthorized_licenses').lower().split('\n')))
+    strategy.AUTHORIZED_PACKAGES = dict()
+    for name, value in config.items('Authorized Packages'):
+        strategy.AUTHORIZED_PACKAGES[name] = value
     return strategy
 
 
