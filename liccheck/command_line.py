@@ -1,6 +1,9 @@
 import argparse
 import collections
-import configparser
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 import enum
 import functools
 import re
@@ -157,7 +160,7 @@ def process(requirement_file, strategy):
 
 
 def read_strategy(strategy_file):
-    config = configparser.ConfigParser()
+    config = ConfigParser()
     config.read(strategy_file)
     strategy = Strategy()
     strategy.AUTHORIZED_LICENSES = list(filter(None, config['Licenses']['authorized_licenses'].lower().split('\n')))

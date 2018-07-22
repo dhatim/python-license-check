@@ -1,2 +1,2 @@
 pip>=9.0.1
-
+enum34; python_version < '3.4'
