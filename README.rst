@@ -17,9 +17,23 @@ The tool will check the ``requirements.txt`` file, check packages and their
 dependencies and return an error if some packages are not compliant
 against the given strategy.
 
-A package is considered as not compliant when its license is in the unauthorized license list or is unknown.
-A package is considered as compliant when its license is in authorized license list, or if the package
-is in the list of authorized packages.
+The tool has 3 levels of checks to select from:
+
+Standard (default):
+    A package is considered as compliant when at least one of its licenses is
+    in the authorized license list, or if the package is in the list of
+    authorized packages.
+
+Cautious:
+    Same as *Standard*, but a package is **not** considered compliant when one
+    or more of its licenses is in the unauthorized license list, even if it
+    also has a license in the authorized license list. A package is still
+    compliant if present in the authorized packages list.
+
+Paranoid:
+    All licenses listed for a package must be in the authorised license list
+    for the package to be considered compliant. A package is still
+    compliant if present in the authorized packages list.
 
 How to install
 ==============
