@@ -23,9 +23,10 @@ except ImportError:
 
 
 class Strategy:
-    AUTHORIZED_LICENSES = []
-    UNAUTHORIZED_LICENSES = []
-    AUTHORIZED_PACKAGES = []
+    def __init__(self):
+        self.AUTHORIZED_LICENSES = []
+        self.UNAUTHORIZED_LICENSES = []
+        self.AUTHORIZED_PACKAGES = []
 
 
 class Reason(enum.Enum):
