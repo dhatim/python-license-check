@@ -1,17 +1,12 @@
 language: python
 matrix:
   include:
-    - name "Testing with python 2.7"
-      python: "2.7"
-    - name "Testing with python 3.4"
-      python: "3.4"
+    - python: "2.7"
+    - python: "3.4"
       dist: trusty
-    - name "Testing with python 3.5"
-      python: "3.5"
-    - name "Testing with python 3.6"
-      python: "3.6"
-    - name "Testing with python 3.7"
-      python: "3.7"
+    - python: "3.5"
+    - python: "3.6"
+    - python: "3.7"
       dist: xenial
       sudo: true
 install:
