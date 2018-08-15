@@ -7,6 +7,7 @@ except ImportError:
 import enum
 import functools
 import re
+import textwrap
 import sys
 
 import pkg_resources
@@ -23,9 +24,27 @@ except ImportError:
 
 
 class Strategy:
-    AUTHORIZED_LICENSES = []
-    UNAUTHORIZED_LICENSES = []
-    AUTHORIZED_PACKAGES = []
+    def __init__(self):
+        self.AUTHORIZED_LICENSES = []
+        self.UNAUTHORIZED_LICENSES = []
+        self.AUTHORIZED_PACKAGES = []
+
+
+class Level(enum.Enum):
+    STANDARD = 'STANDARD'
+    CAUTIOUS = 'CAUTIOUS'
+    PARANOID = 'PARANOID'
+
+    @classmethod
+    def starting(cls, value):
+        """Return level starting with value (case-insensitive)"""
+        for member in cls:
+            if member.name.startswith(value.upper()):
+                return member
+        raise ValueError("No level starting with {!r}".format(value))
+
+    def __str__(self):
+        return self.name
 
 
 class Reason(enum.Enum):
@@ -54,7 +73,9 @@ def get_packages_info(requirement_file):
     def get_license(dist):
         if dist.has_metadata(dist.PKG_INFO):
             metadata = dist.get_metadata(dist.PKG_INFO)
-            return [regex_license.search(metadata).group('license')]
+            license = regex_license.search(metadata).group('license')
+            if license != "UNKNOWN":  # Value when license not specified.
+                return [license]
 
         return []
 
@@ -73,7 +94,7 @@ def get_packages_info(requirement_file):
     return sorted(unique, key=(lambda item: item['name'].lower()))
 
 
-def check_package(strategy, pkg):
+def check_package(strategy, pkg, level=Level.STANDARD):
     whitelisted = (
             pkg['name'] in strategy.AUTHORIZED_PACKAGES and
             strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
@@ -82,14 +103,22 @@ def check_package(strategy, pkg):
         return Reason.OK
 
     at_least_one_unauthorized = False
+    count_authorized = 0
     for license in pkg['licenses']:
         lower = license.lower()
         if lower in strategy.UNAUTHORIZED_LICENSES:
             at_least_one_unauthorized = True
         if lower in strategy.AUTHORIZED_LICENSES:
-            return Reason.OK
+            count_authorized += 1
 
-    # if no license authorized but at least one unauthorized
+    if (count_authorized and level is Level.STANDARD) \
+            or (count_authorized and not at_least_one_unauthorized
+                and level is Level.CAUTIOUS) \
+            or (count_authorized and count_authorized == len(pkg['licenses'])
+                and level is Level.PARANOID):
+        return Reason.OK
+
+    # if not OK and at least one unauthorized
     if at_least_one_unauthorized:
         return Reason.UNAUTHORIZED
 
@@ -129,12 +158,13 @@ def group_by(items, key):
     return res
 
 
-def process(requirement_file, strategy):
+def process(requirement_file, strategy, level=Level.STANDARD):
     print('gathering licenses...')
     pkg_info = get_packages_info(requirement_file)
     all = list(pkg_info)
     print('{} package{} and dependencies.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's'))
-    groups = group_by(pkg_info, functools.partial(check_package, strategy))
+    groups = group_by(
+        pkg_info, functools.partial(check_package, strategy, level=level))
     ret = 0
 
     def format(l):
@@ -172,16 +202,31 @@ def read_strategy(strategy_file):
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(description='Check license of packages and there dependencies.')
-    parser.add_argument('-s', '--sfile', dest='strategy_ini_file', help='strategy ini file', required=True)
-    parser.add_argument('-r', '--rfile', dest='requirement_txt_file', help='path/to/requirement.txt file', nargs='?',
-                        default='./requirements.txt')
+    parser = argparse.ArgumentParser(
+        description='Check license of packages and there dependencies.',
+        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument(
+        '-s', '--sfile', dest='strategy_ini_file', help='strategy ini file',
+        required=True)
+    parser.add_argument(
+        '-l', '--level', choices=Level,
+        default=Level.STANDARD, type=Level.starting,
+        help=textwrap.dedent("""\
+            Level for testing compliance of packages, where:
+              Standard - At least one authorized license (default);
+              Cautious - Per standard but no unauthorized licenses;
+              Paranoid - All licenses must by authorized.
+        """))
+    parser.add_argument(
+        '-r', '--rfile', dest='requirement_txt_file',
+        help='path/to/requirement.txt file', nargs='?',
+        default='./requirements.txt')
     return parser.parse_args(args)
 
 
 def run(args):
     strategy = read_strategy(args.strategy_ini_file)
-    return process(args.requirement_txt_file, strategy)
+    return process(args.requirement_txt_file, strategy, args.level)
 
 
 def main():
