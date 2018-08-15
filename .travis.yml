@@ -27,8 +27,3 @@ deploy:
     secure: AeTh3w8QeXQ6StzHlIbQcYZnr1qRjkQ4lBV0zup1t43dXxoRaXbQ7x2ZwcYpbM2h/lWeWssU2G6iY5ZW4a2t0+4go3PMPLSo2AC/sNJyVeuxvefkXTlWsL2YkTitpB1hhEzBVLMczNgf2OpLrmJIS/3hh1p3smiyj2xt1Jf7TaQ3bGneVFmlFrbOQTz5caoqjTRkhDWEa38pnSpbNIlgHIwhuDpVfUZn+Gh/UXmWdgiE1srpI1YLEMjpiFTe39Y36XvaJ/xszd/a929YgOalTZws+8iCzvI+/vSKdf1G+Phc4iVRbqwHAc4lfzbl42Yy81IMBrCMia/uum/lgkxZtcMJzyBwDXA0Rxtp1Ayh27bwI02tdJ3VQ8X8zvDJjATQhL2dRA5jqjNTco3SugM5rGcOvuLyjgROI9hQV0PSOXydqA/5kfLir5Y0cEpn5xW/RRVW5xgG9Pl6SzpS5vyd4/FB02wnp4pSxJM3v8WOUvMgKK4XjmMKKE8+IrY+avLLrhg3y3ziHdtjrnsVjo+fX+pdxymy85cNDVVH+AfBhG+Hnf2svxA4HnKzN9QaTGLB7EjU8TYCa1eJ8djSbEF9MStw2+b3cUG65jvWjDt/sPwzmcsrAob4rcy5pIBQbbtAa48lqighjjpM8EkDepLJaduDYUIbf3K+dKNjsKBXAo4=
   on:
     tags: true
-
-stages:
-  - test
-  - name: deploy
-    if: branch = master AND tag IS present
