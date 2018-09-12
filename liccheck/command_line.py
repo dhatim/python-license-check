@@ -62,6 +62,8 @@ def get_packages_info(requirement_file):
 
     def transform(dist):
         licenses = get_license(dist) + get_license_OSI_classifiers(dist)
+        # Strip the useless "License" suffix and uniquify
+        licenses = list(set([strip_license(l) for l in licenses]))
         return {
             'name': dist.project_name,
             'version': dist.version,
@@ -85,6 +87,11 @@ def get_packages_info(requirement_file):
             return regex_classifier.findall(metadata)
 
         return []
+
+    def strip_license(license):
+        if license.lower().endswith(" license"):
+            return license[:-len(" license")]
+        return license
 
     packages = [transform(dist) for dist in pkg_resources.working_set.resolve(requirements)]
     # keep only unique values as there are maybe some duplicates
