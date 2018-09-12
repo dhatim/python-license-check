@@ -1,9 +1,9 @@
 import argparse
 import collections
 try:
-    from configparser import ConfigParser
+    from configparser import ConfigParser, NoOptionError
 except ImportError:
-    from ConfigParser import ConfigParser
+    from ConfigParser import ConfigParser, NoOptionError
 import enum
 import functools
 import re
@@ -200,11 +200,20 @@ def read_strategy(strategy_file):
     config = ConfigParser()
     config.read(strategy_file)
     strategy = Strategy()
-    strategy.AUTHORIZED_LICENSES = list(filter(None, config.get('Licenses', 'authorized_licenses').lower().split('\n')))
-    strategy.UNAUTHORIZED_LICENSES = list(filter(None, config.get('Licenses', 'unauthorized_licenses').lower().split('\n')))
+
+    def get_config_list(section, option):
+        try:
+            value = config.get(section, option)
+        except NoOptionError:
+            return []
+        return [item for item in value.lower().split('\n') if item]
+
+    strategy.AUTHORIZED_LICENSES = get_config_list('Licenses', 'authorized_licenses')
+    strategy.UNAUTHORIZED_LICENSES = get_config_list('Licenses', 'unauthorized_licenses')
     strategy.AUTHORIZED_PACKAGES = dict()
-    for name, value in config.items('Authorized Packages'):
-        strategy.AUTHORIZED_PACKAGES[name] = value
+    if config.has_section('Authorized Packages'):
+        for name, value in config.items('Authorized Packages'):
+            strategy.AUTHORIZED_PACKAGES[name] = value
     return strategy
 
 
