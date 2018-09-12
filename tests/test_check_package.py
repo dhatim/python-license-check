@@ -1,6 +1,9 @@
+import os
+import tempfile
+
 import pytest
 
-from liccheck.command_line import check_package, Strategy, Reason, Level
+from liccheck.command_line import check_package, Strategy, Reason, Level, get_packages_info
 
 OK = Reason.OK
 UNAUTH = Reason.UNAUTHORIZED
@@ -58,3 +61,20 @@ def packages():
 def test_check_package(strategy, packages, level, reasons):
     for package, reason in zip(packages, reasons):
         assert check_package(strategy, package, level) is reason
+
+
+@pytest.fixture("session")
+def tmpfile():
+    fd, filepath = tempfile.mkstemp()
+    yield (os.fdopen(fd, "w"), filepath)
+    try:
+        os.close(fd)
+    except OSError:
+        pass # It may already be closed
+    os.remove(filepath)
+
+def test_license_strip(strategy, tmpfile):
+    tmpfh, tmppath = tmpfile
+    tmpfh.write("pip\n")
+    tmpfh.close()
+    assert get_packages_info(tmppath)[0]["licenses"] == ["MIT"]
