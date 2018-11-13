@@ -57,8 +57,12 @@ def get_packages_info(requirement_file):
     regex_license = re.compile(r'License: (?P<license>[^\r\n]+)\r?\n')
     regex_classifier = re.compile(r'Classifier: License :: OSI Approved :: (?P<classifier>[^\r\n]+)\r?\n')
 
-    requirements = [pkg_resources.Requirement.parse(str(req.req)) for req
-                    in parse_requirements(requirement_file, session=PipSession()) if req.req is not None]
+    requirements = []
+    for req in parse_requirements(requirement_file, session=PipSession()):
+        if req.markers:
+            if not pkg_resources.evaluate_marker(str(req.markers)):
+                continue
+        requirements.append(pkg_resources.Requirement.parse(str(req.req)))
 
     def transform(dist):
         licenses = get_license(dist) + get_license_OSI_classifiers(dist)
