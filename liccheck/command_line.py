@@ -136,19 +136,22 @@ def check_package(strategy, pkg, level=Level.STANDARD):
     return Reason.UNKNOWN
 
 
-def find_parents(package, all):
+def find_parents(package, all, seen):
+    if package in seen:
+        return [package]
+    seen.add(package)
     parents = [p['name'] for p in all if package in p['dependencies']]
     if len(parents) == 0:
         return [package]
     dependency_trees = []
     for parent in parents:
-        for dependencies in find_parents(parent, all):
+        for dependencies in find_parents(parent, all, seen):
             dependency_trees.append(package + " << " + dependencies)
     return dependency_trees
 
 
 def write_package(package, all):
-    dependency_branches = find_parents(package['name'], all)
+    dependency_branches = find_parents(package['name'], all, set())
     licenses = package['licenses'] or 'UNKNOWN'
     print('    {} ({}): {}'.format(package['name'], package['version'], licenses))
     print('      dependenc{}:'.format('y' if len(dependency_branches) <= 1 else 'ies'))
