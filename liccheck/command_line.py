@@ -79,9 +79,11 @@ def get_packages_info(requirement_file):
     def get_license(dist):
         if dist.has_metadata(dist.PKG_INFO):
             metadata = dist.get_metadata(dist.PKG_INFO)
-            license = regex_license.search(metadata).group('license')
-            if license != "UNKNOWN":  # Value when license not specified.
-                return [license]
+            match = regex_license.search(metadata)
+            if match:
+                license = match.group('license')
+                if license != "UNKNOWN":  # Value when license not specified.
+                    return [license]
 
         return []
 
