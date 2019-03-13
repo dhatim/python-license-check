@@ -116,14 +116,14 @@ If some dependencies are unknown or are not matching the strategy, the output wi
 	gathering licenses...32 packages and dependencies.
 	check forbidden packages based on licenses...1 forbidden packages :
 	    Unidecode (0.4.21) : GPL ['GNU General Public License v2 or later (GPLv2+)']
-	      dependencye(s):
+	      dependency:
 	          Unidecode << python-slugify << yoyo-migrations
 
 	check authorized packages based on licenses...24 packages.
 	check authorized packages...6 packages.
 	check unknown licenses...1 unknown packages :
 	    feedparser (5.2.1) : UNKNOWN []
-	      dependencye(s):
+	      dependency:
 	          feedparser
 
 Licensing
