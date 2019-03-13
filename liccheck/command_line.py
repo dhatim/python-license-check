@@ -207,6 +207,8 @@ def process(requirement_file, strategy, level=Level.STANDARD):
 
 def read_strategy(strategy_file):
     config = ConfigParser()
+    # keep case of options
+    config.optionxform = str
     config.read(strategy_file)
     strategy = Strategy()
 
