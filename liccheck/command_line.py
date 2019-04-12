@@ -109,8 +109,10 @@ def get_packages_info(requirement_file):
 
 def check_package(strategy, pkg, level=Level.STANDARD):
     whitelisted = (
-            pkg['name'] in strategy.AUTHORIZED_PACKAGES and
-            strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
+            pkg['name'] in strategy.AUTHORIZED_PACKAGES and (
+                strategy.AUTHORIZED_PACKAGES[pkg['name']] == pkg['version']
+                or (level == Level.STANDARD and strategy.AUTHORIZED_PACKAGES[pkg['name']] == '')
+            )
     )
     if whitelisted:
         return Reason.OK
