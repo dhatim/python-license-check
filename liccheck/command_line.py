@@ -111,7 +111,7 @@ def get_packages_info(requirement_file):
 def check_package(strategy, pkg, level=Level.STANDARD):
     whitelisted = (
             pkg['name'] in strategy.AUTHORIZED_PACKAGES and (
-                semantic_version.Spec(strategy.AUTHORIZED_PACKAGES[pkg['name']]).select(semantic_version.Version.coerce(pkg['version']))
+                semantic_version.Spec(strategy.AUTHORIZED_PACKAGES[pkg['name']]).match(semantic_version.Version.coerce(pkg['version']))
                 or (level == Level.STANDARD and strategy.AUTHORIZED_PACKAGES[pkg['name']] == '')
             )
     )
