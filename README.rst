@@ -78,8 +78,9 @@ Here is an example of a ``strategy.ini`` file:
 
 	[Authorized Packages]
 	# Python software license (see http://zesty.ca/python/uuid.README.txt)
-	uuid: 1.30    
+	uuid: 1.30
 
+Note: versions of authorized packages can be defined using `PEP-0440 version specifiers <https://www.python.org/dev/peps/pep-0440/#version-specifiers>`_, such as ``>=1.3,<1.4``. The implementation uses the nice package `semantic_version <https://pypi.org/project/semantic_version/>`_.
 
 For demo purpose, let's say your ``requirements.txt`` file contains this:
 ::
