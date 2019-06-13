@@ -17,6 +17,9 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+    install_reqs = f.read().splitlines()
+
 setup(
     name='liccheck',
 
@@ -76,6 +79,9 @@ setup(
     #   py_modules=["my_module"],
 
     python_requires='>=2.7',
+
+    install_requires=install_reqs,
+
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
