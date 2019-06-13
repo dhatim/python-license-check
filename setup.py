@@ -17,13 +17,16 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+    install_reqs = f.read().splitlines()
+
 setup(
     name='liccheck',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.3.9',
+    version='0.3.12',
 
     description='Check python packages from requirement.txt and report issues',
     long_description=long_description,
@@ -76,6 +79,9 @@ setup(
     #   py_modules=["my_module"],
 
     python_requires='>=2.7',
+
+    install_requires=install_reqs,
+
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
