@@ -55,11 +55,11 @@ class Strategy:
         return strategy
 
     @classmethod
-    def from_config(cls, path):
+    def from_config(cls, strategy_file):
         config = ConfigParser()
         # keep case of options
         config.optionxform = str
-        config.read(path)
+        config.read(strategy_file)
 
         def get_config_list(section, option):
             try:
@@ -82,7 +82,6 @@ class Strategy:
             for name, value in config.items('Authorized Packages'):
                 strategy.AUTHORIZED_PACKAGES[name] = value
         return strategy
-
 
 
 class Level(enum.Enum):
@@ -266,7 +265,11 @@ def read_strategy(strategy_file=None):
     try:
         return Strategy.from_pyproject_toml()
     except NoValidConfigurationInPyprojectToml:
-        return Strategy.from_config(path=strategy_file)
+        pass
+    if strategy_file is None:
+        print("Need to either configure pyproject.toml or provide a strategy file", file=sys.stderr)
+        sys.exit(1)
+    return Strategy.from_config(strategy_file=strategy_file)
 
 
 def parse_args(args):

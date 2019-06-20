@@ -2,19 +2,20 @@ import os
 
 import pytest
 
-from liccheck.command_line import Strategy, NoValidConfigurationInPyprojectToml
+from liccheck.command_line import Strategy, NoValidConfigurationInPyprojectToml, read_strategy
 
 
-def test_absent_sections_in_config_file(tmpfile):
-    tmpfh, tmppath = tmpfile
-    tmpfh.write("""
-[Licenses]
-""")
-    tmpfh.close()
-    strategy = Strategy.from_config(path=tmppath)
-    assert strategy.AUTHORIZED_LICENSES == []
-    assert strategy.UNAUTHORIZED_LICENSES == []
-    assert strategy.AUTHORIZED_PACKAGES == {}
+class TestReadFromConfig:
+    def test_absent_sections_in_config_file(self, tmpfile):
+        tmpfh, tmppath = tmpfile
+        tmpfh.write("""
+    [Licenses]
+    """)
+        tmpfh.close()
+        strategy = Strategy.from_config(strategy_file=tmppath)
+        assert strategy.AUTHORIZED_LICENSES == []
+        assert strategy.UNAUTHORIZED_LICENSES == []
+        assert strategy.AUTHORIZED_PACKAGES == {}
 
 
 class TestReadFromPyprojectToml:
@@ -68,3 +69,27 @@ class TestReadFromPyprojectToml:
                 uuid = "1.30"
                 """
             )
+
+
+class TestReadStrategy:
+    @pytest.mark.usefixtures("from_pyproject_toml_raising")
+    def test_falls_back_to_config_if_no_valid_pyproject_toml(self, mocker):
+        from_config_mock = mocker.patch("liccheck.command_line.Strategy.from_config")
+        read_strategy(strategy_file="strategy_file")
+        from_config_mock.assert_called_once_with(strategy_file="strategy_file")
+
+    @pytest.mark.usefixtures("from_pyproject_toml_raising")
+    def test_displays_error_if_no_valid_pyproject_toml_and_no_strategy_file(self, capsys):
+        with pytest.raises(SystemExit) as exc:
+           read_strategy(strategy_file=None)
+        assert exc.value.code == 1
+        capture_result = capsys.readouterr()
+        _, err = capture_result
+        assert "Need to either configure pyproject.toml or provide a strategy file" in err.split("\n")
+
+    @pytest.fixture
+    def from_pyproject_toml_raising(self, mocker):
+        mocker.patch(
+            "liccheck.command_line.Strategy.from_pyproject_toml",
+            side_effect=NoValidConfigurationInPyprojectToml
+        )
