@@ -9,8 +9,8 @@ class TestReadFromConfig:
     def test_absent_sections_in_config_file(self, tmpfile):
         tmpfh, tmppath = tmpfile
         tmpfh.write("""
-    [Licenses]
-    """)
+[Licenses]
+""")
         tmpfh.close()
         strategy = Strategy.from_config(strategy_file=tmppath)
         assert strategy.AUTHORIZED_LICENSES == []
