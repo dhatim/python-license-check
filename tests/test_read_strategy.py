@@ -46,7 +46,7 @@ class TestReadFromPyprojectToml:
     @pytest.fixture
     def empty_pyproject_toml_in_cwd(self, tmpdir):
         cwd = os.getcwd()
-        os.chdir(tmpdir)
+        os.chdir(str(tmpdir))
         open("pyproject.toml", "w").close()
         yield
         os.chdir(cwd)
@@ -84,8 +84,8 @@ class TestReadStrategy:
            read_strategy(strategy_file=None)
         assert exc.value.code == 1
         capture_result = capsys.readouterr()
-        _, err = capture_result
-        assert "Need to either configure pyproject.toml or provide a strategy file" in err.split("\n")
+        std, _ = capture_result
+        assert "Need to either configure pyproject.toml or provide a strategy file" in std.split("\n")
 
     @pytest.fixture
     def from_pyproject_toml_raising(self, mocker):

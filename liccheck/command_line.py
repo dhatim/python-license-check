@@ -270,7 +270,7 @@ def read_strategy(strategy_file=None):
     except NoValidConfigurationInPyprojectToml:
         pass
     if strategy_file is None:
-        print("Need to either configure pyproject.toml or provide a strategy file", file=sys.stderr)
+        print("Need to either configure pyproject.toml or provide a strategy file")
         sys.exit(1)
     return Strategy.from_config(strategy_file=strategy_file)
 
