@@ -25,6 +25,10 @@ except ImportError:
     from pip.req import parse_requirements
 
 
+class NoValidConfigurationInPyprojectToml(BaseException):
+    pass
+
+
 class Strategy:
     def __init__(self):
         self.AUTHORIZED_LICENSES = []
@@ -33,8 +37,19 @@ class Strategy:
 
     @classmethod
     def from_pyproject_toml(cls):
-        pyproject_toml = toml.load("pyproject.toml")
+        try:
+            pyproject_toml = toml.load("pyproject.toml")
+        except FileNotFoundError:
+            raise NoValidConfigurationInPyprojectToml
+
+        try:
+            liccheck_section = pyproject_toml["tool"]["liccheck"]
+        except KeyError:
+            raise NoValidConfigurationInPyprojectToml
+
         strategy = cls()
+        print(liccheck_section)
+        assert False
         return strategy
 
     @classmethod
@@ -242,7 +257,7 @@ def process(requirement_file, strategy, level=Level.STANDARD):
 def read_strategy(strategy_file=None):
     try:
         return Strategy.from_pyproject_toml()
-    except FileNotFoundError:
+    except NoValidConfigurationInPyprojectToml:
         return Strategy.from_config(path=strategy_file)
 
 
