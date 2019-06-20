@@ -47,9 +47,12 @@ class Strategy:
         except KeyError:
             raise NoValidConfigurationInPyprojectToml
 
+        def elements_to_lower_str(lst):
+            return [str(_).lower() for _ in lst]
+
         strategy = cls(
-            authorized_licenses=liccheck_section.get("authorized_licenses", []),
-            unauthorized_licenses=liccheck_section.get("unauthorized_licenses", []),
+            authorized_licenses=elements_to_lower_str(liccheck_section.get("authorized_licenses", [])),
+            unauthorized_licenses=elements_to_lower_str(liccheck_section.get("unauthorized_licenses", [])),
             authorized_packages=liccheck_section.get("authorized_packages", dict())
         )
         return strategy

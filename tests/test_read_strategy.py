@@ -58,7 +58,7 @@ class TestReadFromPyprojectToml:
                 """
                 [tool.liccheck]
                 authorized_licenses = [
-                  "bsd",
+                  "BSD",
                   "new bsd",
                   "bsd license"
                 ]
