@@ -10,6 +10,7 @@ import re
 import textwrap
 import sys
 import semantic_version
+import toml
 
 import pkg_resources
 
@@ -29,6 +30,36 @@ class Strategy:
         self.AUTHORIZED_LICENSES = []
         self.UNAUTHORIZED_LICENSES = []
         self.AUTHORIZED_PACKAGES = []
+
+    @classmethod
+    def from_pyproject_toml(cls):
+        pyproject_toml = toml.load("pyproject.toml")
+        strategy = cls()
+        return strategy
+
+    @classmethod
+    def from_config(cls, path):
+        config = ConfigParser()
+        # keep case of options
+        config.optionxform = str
+        config.read(path)
+        strategy = cls()
+
+        def get_config_list(section, option):
+            try:
+                value = config.get(section, option)
+            except NoOptionError:
+                return []
+            return [item for item in value.lower().split('\n') if item]
+
+        strategy.AUTHORIZED_LICENSES = get_config_list('Licenses', 'authorized_licenses')
+        strategy.UNAUTHORIZED_LICENSES = get_config_list('Licenses', 'unauthorized_licenses')
+        strategy.AUTHORIZED_PACKAGES = dict()
+        if config.has_section('Authorized Packages'):
+            for name, value in config.items('Authorized Packages'):
+                strategy.AUTHORIZED_PACKAGES[name] = value
+        return strategy
+
 
 
 class Level(enum.Enum):
@@ -208,27 +239,11 @@ def process(requirement_file, strategy, level=Level.STANDARD):
     return ret
 
 
-def read_strategy(strategy_file):
-    config = ConfigParser()
-    # keep case of options
-    config.optionxform = str
-    config.read(strategy_file)
-    strategy = Strategy()
-
-    def get_config_list(section, option):
-        try:
-            value = config.get(section, option)
-        except NoOptionError:
-            return []
-        return [item for item in value.lower().split('\n') if item]
-
-    strategy.AUTHORIZED_LICENSES = get_config_list('Licenses', 'authorized_licenses')
-    strategy.UNAUTHORIZED_LICENSES = get_config_list('Licenses', 'unauthorized_licenses')
-    strategy.AUTHORIZED_PACKAGES = dict()
-    if config.has_section('Authorized Packages'):
-        for name, value in config.items('Authorized Packages'):
-            strategy.AUTHORIZED_PACKAGES[name] = value
-    return strategy
+def read_strategy(strategy_file=None):
+    try:
+        return Strategy.from_pyproject_toml()
+    except FileNotFoundError:
+        return Strategy.from_config(path=strategy_file)
 
 
 def parse_args(args):
@@ -237,7 +252,7 @@ def parse_args(args):
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         '-s', '--sfile', dest='strategy_ini_file', help='strategy ini file',
-        required=True)
+        required=False)
     parser.add_argument(
         '-l', '--level', choices=Level,
         default=Level.STANDARD, type=Level.starting,
