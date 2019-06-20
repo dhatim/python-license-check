@@ -24,6 +24,11 @@ try:
 except ImportError:
     from pip.req import parse_requirements
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 class NoValidConfigurationInPyprojectToml(BaseException):
     pass
