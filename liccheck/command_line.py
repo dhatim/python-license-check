@@ -30,10 +30,10 @@ class NoValidConfigurationInPyprojectToml(BaseException):
 
 
 class Strategy:
-    def __init__(self):
-        self.AUTHORIZED_LICENSES = []
-        self.UNAUTHORIZED_LICENSES = []
-        self.AUTHORIZED_PACKAGES = []
+    def __init__(self, authorized_licenses, unauthorized_licenses, authorized_packages):
+        self.AUTHORIZED_LICENSES = authorized_licenses
+        self.UNAUTHORIZED_LICENSES = unauthorized_licenses
+        self.AUTHORIZED_PACKAGES = authorized_packages
 
     @classmethod
     def from_pyproject_toml(cls):
@@ -47,9 +47,11 @@ class Strategy:
         except KeyError:
             raise NoValidConfigurationInPyprojectToml
 
-        strategy = cls()
-        print(liccheck_section)
-        assert False
+        strategy = cls(
+            authorized_licenses=liccheck_section.get("authorized_licenses", []),
+            unauthorized_licenses=liccheck_section.get("unauthorized_licenses", []),
+            authorized_packages=liccheck_section.get("authorized_packages", dict())
+        )
         return strategy
 
     @classmethod
@@ -58,7 +60,6 @@ class Strategy:
         # keep case of options
         config.optionxform = str
         config.read(path)
-        strategy = cls()
 
         def get_config_list(section, option):
             try:
@@ -67,9 +68,16 @@ class Strategy:
                 return []
             return [item for item in value.lower().split('\n') if item]
 
-        strategy.AUTHORIZED_LICENSES = get_config_list('Licenses', 'authorized_licenses')
-        strategy.UNAUTHORIZED_LICENSES = get_config_list('Licenses', 'unauthorized_licenses')
-        strategy.AUTHORIZED_PACKAGES = dict()
+        authorized_packages = dict()
+        if config.has_section('Authorized Packages'):
+            for name, value in config.items('Authorized Packages'):
+                authorized_packages[name] = value
+
+        strategy = cls(
+            authorized_licenses=get_config_list('Licenses', 'authorized_licenses'),
+            unauthorized_licenses=get_config_list('Licenses', 'unauthorized_licenses'),
+            authorized_packages=authorized_packages,
+        )
         if config.has_section('Authorized Packages'):
             for name, value in config.items('Authorized Packages'):
                 strategy.AUTHORIZED_PACKAGES[name] = value
