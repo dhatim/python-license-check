@@ -14,9 +14,12 @@ import semantic_version
 import pkg_resources
 
 try:
-    from pip._internal.download import PipSession
+    from pip._internal.network.session import PipSession
 except ImportError:
-    from pip.download import PipSession
+    try:
+        from pip._internal.download import PipSession
+    except ImportError:
+        from pip.download import PipSession
 
 try:
     from pip._internal.req import parse_requirements
