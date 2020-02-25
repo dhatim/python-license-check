@@ -10,6 +10,7 @@ import re
 import textwrap
 import sys
 import semantic_version
+import toml
 
 import pkg_resources
 
@@ -26,12 +27,72 @@ try:
 except ImportError:
     from pip.req import parse_requirements
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
+class NoValidConfigurationInPyprojectToml(BaseException):
+    pass
+
 
 class Strategy:
-    def __init__(self):
-        self.AUTHORIZED_LICENSES = []
-        self.UNAUTHORIZED_LICENSES = []
-        self.AUTHORIZED_PACKAGES = []
+    def __init__(self, authorized_licenses, unauthorized_licenses, authorized_packages):
+        self.AUTHORIZED_LICENSES = authorized_licenses
+        self.UNAUTHORIZED_LICENSES = unauthorized_licenses
+        self.AUTHORIZED_PACKAGES = authorized_packages
+
+    @classmethod
+    def from_pyproject_toml(cls):
+        try:
+            pyproject_toml = toml.load("pyproject.toml")
+        except FileNotFoundError:
+            raise NoValidConfigurationInPyprojectToml
+
+        try:
+            liccheck_section = pyproject_toml["tool"]["liccheck"]
+        except KeyError:
+            raise NoValidConfigurationInPyprojectToml
+
+        def elements_to_lower_str(lst):
+            return [str(_).lower() for _ in lst]
+
+        strategy = cls(
+            authorized_licenses=elements_to_lower_str(liccheck_section.get("authorized_licenses", [])),
+            unauthorized_licenses=elements_to_lower_str(liccheck_section.get("unauthorized_licenses", [])),
+            authorized_packages=liccheck_section.get("authorized_packages", dict())
+        )
+        return strategy
+
+    @classmethod
+    def from_config(cls, strategy_file):
+        config = ConfigParser()
+        # keep case of options
+        config.optionxform = str
+        config.read(strategy_file)
+
+        def get_config_list(section, option):
+            try:
+                value = config.get(section, option)
+            except NoOptionError:
+                return []
+            return [item for item in value.lower().split('\n') if item]
+
+        authorized_packages = dict()
+        if config.has_section('Authorized Packages'):
+            for name, value in config.items('Authorized Packages'):
+                authorized_packages[name] = value
+
+        strategy = cls(
+            authorized_licenses=get_config_list('Licenses', 'authorized_licenses'),
+            unauthorized_licenses=get_config_list('Licenses', 'unauthorized_licenses'),
+            authorized_packages=authorized_packages,
+        )
+        if config.has_section('Authorized Packages'):
+            for name, value in config.items('Authorized Packages'):
+                strategy.AUTHORIZED_PACKAGES[name] = value
+        return strategy
 
 
 class Level(enum.Enum):
@@ -211,27 +272,15 @@ def process(requirement_file, strategy, level=Level.STANDARD):
     return ret
 
 
-def read_strategy(strategy_file):
-    config = ConfigParser()
-    # keep case of options
-    config.optionxform = str
-    config.read(strategy_file)
-    strategy = Strategy()
-
-    def get_config_list(section, option):
-        try:
-            value = config.get(section, option)
-        except NoOptionError:
-            return []
-        return [item for item in value.lower().split('\n') if item]
-
-    strategy.AUTHORIZED_LICENSES = get_config_list('Licenses', 'authorized_licenses')
-    strategy.UNAUTHORIZED_LICENSES = get_config_list('Licenses', 'unauthorized_licenses')
-    strategy.AUTHORIZED_PACKAGES = dict()
-    if config.has_section('Authorized Packages'):
-        for name, value in config.items('Authorized Packages'):
-            strategy.AUTHORIZED_PACKAGES[name] = value
-    return strategy
+def read_strategy(strategy_file=None):
+    try:
+        return Strategy.from_pyproject_toml()
+    except NoValidConfigurationInPyprojectToml:
+        pass
+    if strategy_file is None:
+        print("Need to either configure pyproject.toml or provide a strategy file")
+        sys.exit(1)
+    return Strategy.from_config(strategy_file=strategy_file)
 
 
 def parse_args(args):
@@ -240,7 +289,7 @@ def parse_args(args):
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         '-s', '--sfile', dest='strategy_ini_file', help='strategy ini file',
-        required=True)
+        required=False)
     parser.add_argument(
         '-l', '--level', choices=Level,
         default=Level.STANDARD, type=Level.starting,

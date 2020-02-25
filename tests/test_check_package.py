@@ -9,11 +9,11 @@ UNKNOWN = Reason.UNKNOWN
 
 @pytest.fixture('session')
 def strategy():
-    strategy = Strategy()
-    strategy.AUTHORIZED_LICENSES = ['authorized 1', 'authorized 2']
-    strategy.UNAUTHORIZED_LICENSES = ['unauthorized 1', 'unauthorized 2']
-    strategy.AUTHORIZED_PACKAGES = {'whitelisted': '1'}
-
+    strategy = Strategy(
+        authorized_licenses=['authorized 1', 'authorized 2'],
+        unauthorized_licenses=['unauthorized 1', 'unauthorized 2'],
+        authorized_packages={'whitelisted': '1'}
+    )
     return strategy
 
 
