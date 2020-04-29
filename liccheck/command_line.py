@@ -1,5 +1,8 @@
 import argparse
 import collections
+
+from liccheck.requirements import parse_requirements
+
 try:
     from configparser import ConfigParser, NoOptionError
 except ImportError:
@@ -13,19 +16,6 @@ import semantic_version
 import toml
 
 import pkg_resources
-
-try:
-    from pip._internal.network.session import PipSession
-except ImportError:
-    try:
-        from pip._internal.download import PipSession
-    except ImportError:
-        from pip.download import PipSession
-
-try:
-    from pip._internal.req import parse_requirements
-except ImportError:
-    from pip.req import parse_requirements
 
 try:
     FileNotFoundError
@@ -122,12 +112,7 @@ def get_packages_info(requirement_file):
     regex_license = re.compile(r'License: (?P<license>[^\r\n]+)\r?\n')
     regex_classifier = re.compile(r'Classifier: License :: OSI Approved :: (?P<classifier>[^\r\n]+)\r?\n')
 
-    requirements = []
-    for req in parse_requirements(requirement_file, session=PipSession()):
-        if req.markers:
-            if not pkg_resources.evaluate_marker(str(req.markers)):
-                continue
-        requirements.append(pkg_resources.Requirement.parse(str(req.req)))
+    requirements = parse_requirements(requirement_file)
 
     def transform(dist):
         licenses = get_license(dist) + get_license_OSI_classifiers(dist)
