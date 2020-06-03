@@ -249,7 +249,7 @@ def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=Non
                 )
         with open(reporting_file, 'w') as f:
             for p in sorted(packages, key=lambda i: i['name']):
-                f.write(f"{p['name']} {p['version']} {p['license']} {p['status'].value}\n")
+                f.write('{} {} {} {}\n'.format(p['name'], p['version'], p['license'], p['status'].value))
 
     def format(l):
         return '{} package{}.'.format(len(l), '' if len(l) <= 1 else 's')
