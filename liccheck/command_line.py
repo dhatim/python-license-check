@@ -238,7 +238,6 @@ def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=Non
     if reporting_file:
         packages = []
         for r, ps in groups.items():
-            print(r, ps)
             for p in ps:
                 packages.append(
                     {
