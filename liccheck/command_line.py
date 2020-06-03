@@ -226,7 +226,7 @@ def group_by(items, key):
     return res
 
 
-def process(requirement_file, strategy, level=Level.STANDARD):
+def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=None):
     print('gathering licenses...')
     pkg_info = get_packages_info(requirement_file)
     all = list(pkg_info)
@@ -234,6 +234,22 @@ def process(requirement_file, strategy, level=Level.STANDARD):
     groups = group_by(
         pkg_info, functools.partial(check_package, strategy, level=level))
     ret = 0
+
+    if reporting_file:
+        packages = []
+        for r, ps in groups.items():
+            for p in ps:
+                packages.append(
+                    {
+                        'name': p['name'],
+                        'version': p['version'],
+                        'license': (p['licenses'] or ['UNKNOWN'])[0],
+                        'status': r
+                    }
+                )
+        with open(reporting_file, 'w') as f:
+            for p in sorted(packages, key=lambda i: i['name']):
+                f.write(f"{p['name']} {p['version']} {p['license']} {p['status'].value}\n")
 
     def format(l):
         return '{} package{}.'.format(len(l), '' if len(l) <= 1 else 's')
@@ -288,12 +304,16 @@ def parse_args(args):
         '-r', '--rfile', dest='requirement_txt_file',
         help='path/to/requirement.txt file', nargs='?',
         default='./requirements.txt')
+    parser.add_argument(
+        '-R', '--reporting', dest='reporting_txt_file',
+        help='path/to/reporting.txt file', nargs='?',
+        default=None)
     return parser.parse_args(args)
 
 
 def run(args):
     strategy = read_strategy(args.strategy_ini_file)
-    return process(args.requirement_txt_file, strategy, args.level)
+    return process(args.requirement_txt_file, strategy, args.level, args.reporting_txt_file)
 
 
 def main():
