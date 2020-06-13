@@ -2,6 +2,9 @@
     :target: https://badge.fury.io/py/liccheck
 .. image:: https://travis-ci.org/dhatim/python-license-check.svg?branch=master
     :target: https://travis-ci.org/dhatim/python-license-check
+.. image:: https://codecov.io/gh/dhatim/python-license-check/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/dhatim/python-license-check
+
 
 Python License Checker
 ======================
@@ -126,6 +129,14 @@ If some dependencies are unknown or are not matching the strategy, the output wi
 	    feedparser (5.2.1) : UNKNOWN []
 	      dependency:
 	          feedparser
+
+Contributing
+============
+
+To run the tests:
+::
+
+    $ tox -p all
 
 Licensing
 =========
