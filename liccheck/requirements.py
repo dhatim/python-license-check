@@ -28,3 +28,20 @@ def parse_requirements(requirement_file):
             continue
         requirements.append(pkg_resources.Requirement.parse(str(install_req.req)))
     return requirements
+
+
+def resolve_without_deps(requirements):
+    for req in requirements:
+        working_set = pkg_resources.working_set
+        env = pkg_resources.Environment(working_set.entries)
+        dist = env.best_match(
+            req=req,
+            working_set=working_set,
+            installer=None,
+            replace_conflicting=False,
+        )
+        yield dist
+
+
+def resolve(requirements):
+    yield from pkg_resources.working_set.resolve(requirements)

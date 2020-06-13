@@ -22,3 +22,18 @@ def test_requirements_markers(tmpfile):
         assert len(get_packages_info(tmppath)) == 2
     else:
         assert len(get_packages_info(tmppath)) == 1
+
+
+@pytest.mark.parametrize(
+    ('no_deps', 'expected_packages'), (
+        pytest.param(False, ('configparser', 'liccheck', 'semantic-version', 'toml'), id='with deps'),
+        pytest.param(True, ('liccheck',), id='without deps'),
+    )
+)
+def test_deps(tmpfile, no_deps, expected_packages):
+    tmpfh, tmppath = tmpfile
+    tmpfh.write('liccheck\n')
+    tmpfh.close()
+    packages_info = get_packages_info(tmppath, no_deps)
+    packages = tuple(package['name'] for package in packages_info)
+    assert packages == expected_packages
