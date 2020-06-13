@@ -286,7 +286,7 @@ def read_strategy(strategy_file=None):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(
-        description='Check license of packages and there dependencies.',
+        description='Check license of packages and their dependencies.',
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         '-s', '--sfile', dest='strategy_ini_file', help='strategy ini file',
