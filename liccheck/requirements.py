@@ -31,8 +31,8 @@ def parse_requirements(requirement_file):
 
 
 def resolve_without_deps(requirements):
+    working_set = pkg_resources.working_set
     for req in requirements:
-        working_set = pkg_resources.working_set
         env = pkg_resources.Environment(working_set.entries)
         dist = env.best_match(
             req=req,
