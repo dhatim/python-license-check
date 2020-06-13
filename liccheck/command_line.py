@@ -236,7 +236,8 @@ def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=Non
     print('gathering licenses...')
     pkg_info = get_packages_info(requirement_file, no_deps)
     all = list(pkg_info)
-    print('{} package{} and dependencies.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's'))
+    deps_mention = '' if no_deps else ' and dependencies'
+    print('{} package{}{}.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's', deps_mention))
     groups = group_by(
         pkg_info, functools.partial(check_package, strategy, level=level))
     ret = 0

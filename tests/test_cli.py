@@ -1,5 +1,5 @@
 from liccheck.command_line import parse_args, read_strategy, run, Level
-
+import textwrap
 
 def test_parse_arguments():
     args = parse_args(['--sfile', 'my_strategy.ini'])
@@ -27,6 +27,31 @@ def test_read_strategy():
     assert len(strategy.UNAUTHORIZED_LICENSES) > 0
 
 
-def test_run():
+def test_run(capsys):
     args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt'])
     run(args)
+    captured = capsys.readouterr().out
+    expected = textwrap.dedent(
+        '''\
+        gathering licenses...
+        3 packages and dependencies.
+        check authorized packages...
+        3 packages.
+        '''
+    )
+    assert captured == expected
+
+
+def test_run_without_deps(capsys):
+    args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt', '--no-deps'])
+    run(args)
+    captured = capsys.readouterr().out
+    expected = textwrap.dedent(
+        '''\
+        gathering licenses...
+        3 packages.
+        check authorized packages...
+        3 packages.
+        '''
+    )
+    assert captured == expected
