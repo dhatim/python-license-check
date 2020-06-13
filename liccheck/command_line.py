@@ -1,7 +1,7 @@
 import argparse
 import collections
 
-from liccheck.requirements import parse_requirements
+from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
 
 try:
     from configparser import ConfigParser, NoOptionError
@@ -108,7 +108,7 @@ class Reason(enum.Enum):
     UNKNOWN = 'UNKNOWN'
 
 
-def get_packages_info(requirement_file):
+def get_packages_info(requirement_file, no_deps=False):
     regex_license = re.compile(r'License: (?P<license>[^\r\n]+)\r?\n')
     regex_classifier = re.compile(r'Classifier: License :: OSI Approved :: (?P<classifier>[^\r\n]+)\r?\n')
 
@@ -149,7 +149,8 @@ def get_packages_info(requirement_file):
             return license[:-len(" license")]
         return license
 
-    packages = [transform(dist) for dist in pkg_resources.working_set.resolve(requirements)]
+    resolve_func = resolve_without_deps if no_deps else resolve
+    packages = [transform(dist) for dist in resolve_func(requirements)]
     # keep only unique values as there are maybe some duplicates
     unique = []
     [unique.append(item) for item in packages if item not in unique]
@@ -204,18 +205,23 @@ def find_parents(package, all, seen):
     return dependency_trees
 
 
-def write_package(package, all):
-    dependency_branches = find_parents(package['name'], all, set())
+def write_package(package, all, no_deps=False):
     licenses = package['licenses'] or 'UNKNOWN'
     print('    {} ({}): {}'.format(package['name'], package['version'], licenses))
+    if not no_deps:
+        write_deps(package, all)
+
+
+def write_deps(package, all):
+    dependency_branches = find_parents(package['name'], all, set())
     print('      dependenc{}:'.format('y' if len(dependency_branches) <= 1 else 'ies'))
     for dependency_branch in dependency_branches:
         print('          {}'.format(dependency_branch))
 
 
-def write_packages(packages, all):
+def write_packages(packages, all, no_deps=False):
     for package in packages:
-        write_package(package, all)
+        write_package(package, all, no_deps)
 
 
 def group_by(items, key):
@@ -226,11 +232,12 @@ def group_by(items, key):
     return res
 
 
-def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=None):
+def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=None, no_deps=False):
     print('gathering licenses...')
-    pkg_info = get_packages_info(requirement_file)
+    pkg_info = get_packages_info(requirement_file, no_deps)
     all = list(pkg_info)
-    print('{} package{} and dependencies.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's'))
+    deps_mention = '' if no_deps else ' and dependencies'
+    print('{} package{}{}.'.format(len(pkg_info), '' if len(pkg_info) <= 1 else 's', deps_mention))
     groups = group_by(
         pkg_info, functools.partial(check_package, strategy, level=level))
     ret = 0
@@ -261,13 +268,13 @@ def process(requirement_file, strategy, level=Level.STANDARD, reporting_file=Non
     if groups[Reason.UNAUTHORIZED]:
         print('check unauthorized packages...')
         print(format(groups[Reason.UNAUTHORIZED]))
-        write_packages(groups[Reason.UNAUTHORIZED], all)
+        write_packages(groups[Reason.UNAUTHORIZED], all, no_deps)
         ret = -1
 
     if groups[Reason.UNKNOWN]:
         print('check unknown packages...')
         print(format(groups[Reason.UNKNOWN]))
-        write_packages(groups[Reason.UNKNOWN], all)
+        write_packages(groups[Reason.UNKNOWN], all, no_deps)
         ret = -1
 
     return ret
@@ -308,12 +315,16 @@ def parse_args(args):
         '-R', '--reporting', dest='reporting_txt_file',
         help='path/to/reporting.txt file', nargs='?',
         default=None)
+    parser.add_argument(
+        '--no-deps', dest='no_deps',
+        help="don't check dependencies", action='store_true')
+
     return parser.parse_args(args)
 
 
 def run(args):
     strategy = read_strategy(args.strategy_ini_file)
-    return process(args.requirement_txt_file, strategy, args.level, args.reporting_txt_file)
+    return process(args.requirement_txt_file, strategy, args.level, args.reporting_txt_file, args.no_deps)
 
 
 def main():
