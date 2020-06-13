@@ -1,4 +1,6 @@
 from liccheck.command_line import parse_args, read_strategy, run, Level
+import pytest
+import sys
 import textwrap
 
 def test_parse_arguments():
@@ -27,6 +29,7 @@ def test_read_strategy():
     assert len(strategy.UNAUTHORIZED_LICENSES) > 0
 
 
+@pytest.mark.skipif(sys.version_info[0] < 3, reason='with py2 there are more dependencies')
 def test_run(capsys):
     args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt'])
     run(args)
@@ -42,6 +45,7 @@ def test_run(capsys):
     assert captured == expected
 
 
+@pytest.mark.skipif(sys.version_info[0] < 3, reason='with py2 there are more dependencies')
 def test_run_without_deps(capsys):
     args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt', '--no-deps'])
     run(args)

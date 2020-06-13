@@ -44,4 +44,5 @@ def resolve_without_deps(requirements):
 
 
 def resolve(requirements):
-    yield from pkg_resources.working_set.resolve(requirements)
+    for dist in pkg_resources.working_set.resolve(requirements):
+        yield dist
