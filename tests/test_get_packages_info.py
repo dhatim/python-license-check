@@ -26,7 +26,15 @@ def test_requirements_markers(tmpfile):
 
 @pytest.mark.parametrize(
     ('no_deps', 'expected_packages'), (
-        pytest.param(False, ('configparser', 'liccheck', 'semantic-version', 'toml'), id='with deps'),
+        pytest.param(
+            False,
+            ('configparser', 'liccheck', 'semantic-version', 'toml'),
+            marks=pytest.mark.skipif(
+                sys.version_info[0] < 3,
+                reason='with py2 there are more dependencies',
+            ),
+            id='with deps'
+        ),
         pytest.param(True, ('liccheck',), id='without deps'),
     )
 )
