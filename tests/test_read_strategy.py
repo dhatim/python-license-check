@@ -80,7 +80,8 @@ class TestReadStrategy:
         from_config_mock.assert_called_once_with(strategy_file="strategy_file")
 
     @pytest.mark.usefixtures("from_pyproject_toml_raising")
-    def test_displays_error_if_no_valid_pyproject_toml_and_no_strategy_file(self, capsys):
+    def test_displays_error_if_no_valid_pyproject_toml_and_no_strategy_file(self, capsys, mocker):
+        mocker.patch("os.path.isfile", return_value=False)
         with pytest.raises(SystemExit) as exc:
             read_strategy(strategy_file="./liccheck.ini")
         assert exc.value.code == 1
