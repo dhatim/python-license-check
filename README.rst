@@ -50,10 +50,11 @@ How to use
 ==========
 
 ``liccheck`` will read the ``requirements.txt`` and verify compliance of packages against a strategy defined in the ``ini`` file.
-If the file is not specified on command line, it will search for ``requirements.txt`` in the current folder.
+If the requirements file is not specified on the command line, it will search for ``requirements.txt`` in the current folder.
 You have to setup an ``ini`` file with an authorized license list, unauthorized license list and authorized package list. The packages from your ``requirements.txt`` need to all be installed in the same python environment/virtualenv as ``liccheck``.
+If the ``ini`` file is not specified on the command line, it will search for ``liccheck.ini`` in the current folder.
 
-Here is an example of a ``strategy.ini`` file:
+Here is an example of a ``liccheck.ini`` file:
 ::
 
 	# Authorized and unauthorized licenses in LOWER CASE
