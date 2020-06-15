@@ -27,7 +27,7 @@ def test_parse_arguments():
 
 
 def test_read_strategy():
-    args = parse_args(['--sfile', 'license_strategy.ini'])
+    args = parse_args(['--sfile', 'liccheck.ini'])
     strategy = read_strategy(args.strategy_ini_file)
     assert len(strategy.AUTHORIZED_LICENSES) > 0
     assert len(strategy.AUTHORIZED_PACKAGES) > 0
@@ -36,7 +36,7 @@ def test_read_strategy():
 
 @pytest.mark.skipif(sys.version_info[0] < 3, reason='with py2 there are more dependencies')
 def test_run(capsys):
-    args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt'])
+    args = parse_args(['--sfile', 'liccheck.ini', '--rfile', 'requirements.txt'])
     run(args)
     captured = capsys.readouterr().out
     expected = textwrap.dedent(
@@ -52,7 +52,7 @@ def test_run(capsys):
 
 @pytest.mark.skipif(sys.version_info[0] < 3, reason='with py2 there are more dependencies')
 def test_run_without_deps(capsys):
-    args = parse_args(['--sfile', 'license_strategy.ini', '--rfile', 'requirements.txt', '--no-deps'])
+    args = parse_args(['--sfile', 'liccheck.ini', '--rfile', 'requirements.txt', '--no-deps'])
     run(args)
     captured = capsys.readouterr().out
     expected = textwrap.dedent(

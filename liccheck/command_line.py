@@ -1,6 +1,6 @@
 import argparse
 import collections
-from pathlib import Path
+import os.path
 
 from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
 
@@ -286,7 +286,7 @@ def read_strategy(strategy_file=None):
         return Strategy.from_pyproject_toml()
     except NoValidConfigurationInPyprojectToml:
         pass
-    if not Path(strategy_file).exists():
+    if not os.path.isfile(strategy_file):
         print("Need to either configure pyproject.toml or provide an existing strategy file")
         sys.exit(1)
     return Strategy.from_config(strategy_file=strategy_file)

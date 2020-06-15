@@ -1,5 +1,4 @@
 pip>=9.0.1
 enum34;python_version<"3.4"
-pathlib2;python_version<"3.4"
 semantic_version
 toml

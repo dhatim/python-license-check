@@ -75,7 +75,7 @@ class TestReadStrategy:
     @pytest.mark.usefixtures("from_pyproject_toml_raising")
     def test_falls_back_to_config_if_no_valid_pyproject_toml(self, mocker):
         from_config_mock = mocker.patch("liccheck.command_line.Strategy.from_config")
-        mocker.patch("pathlib.Path.exists", return_value=True)
+        mocker.patch("os.path.isfile", return_value=True)
         read_strategy(strategy_file="strategy_file")
         from_config_mock.assert_called_once_with(strategy_file="strategy_file")
 
