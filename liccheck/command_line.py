@@ -1,5 +1,6 @@
 import argparse
 import collections
+from pathlib import Path
 
 from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
 
@@ -285,8 +286,8 @@ def read_strategy(strategy_file=None):
         return Strategy.from_pyproject_toml()
     except NoValidConfigurationInPyprojectToml:
         pass
-    if strategy_file is None:
-        print("Need to either configure pyproject.toml or provide a strategy file")
+    if not Path(strategy_file).exists():
+        print("Need to either configure pyproject.toml or provide an existing strategy file")
         sys.exit(1)
     return Strategy.from_config(strategy_file=strategy_file)
 
@@ -297,7 +298,7 @@ def parse_args(args):
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         '-s', '--sfile', dest='strategy_ini_file', help='strategy ini file',
-        required=False)
+        default="./liccheck.ini")
     parser.add_argument(
         '-l', '--level', choices=Level,
         default=Level.STANDARD, type=Level.starting,

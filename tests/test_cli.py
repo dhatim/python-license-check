@@ -4,6 +4,11 @@ import sys
 import textwrap
 
 def test_parse_arguments():
+    args = parse_args([])
+    assert args.strategy_ini_file == './liccheck.ini'
+    assert args.requirement_txt_file == './requirements.txt'
+    assert args.level is Level.STANDARD
+    assert args.no_deps is False
     args = parse_args(['--sfile', 'my_strategy.ini'])
     assert args.strategy_ini_file == 'my_strategy.ini'
     assert args.requirement_txt_file == './requirements.txt'
