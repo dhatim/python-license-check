@@ -87,6 +87,7 @@ setup(
         ':python_version < "3.4"': [
             'ConfigParser',
             'enum34',
+            'pathlib2',
         ],
         ':python_version >= "3.4"': [
             'configparser',
