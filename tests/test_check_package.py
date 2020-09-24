@@ -7,7 +7,7 @@ UNAUTH = Reason.UNAUTHORIZED
 UNKNOWN = Reason.UNKNOWN
 
 
-@pytest.fixture('session')
+@pytest.fixture(scope='session')
 def strategy():
     strategy = Strategy(
         authorized_licenses=['authorized 1', 'authorized 2'],
@@ -17,7 +17,7 @@ def strategy():
     return strategy
 
 
-@pytest.fixture('session')
+@pytest.fixture(scope='session')
 def packages():
     return [
         {
