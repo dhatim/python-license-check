@@ -75,17 +75,19 @@ class TestReadStrategy:
     @pytest.mark.usefixtures("from_pyproject_toml_raising")
     def test_falls_back_to_config_if_no_valid_pyproject_toml(self, mocker):
         from_config_mock = mocker.patch("liccheck.command_line.Strategy.from_config")
+        mocker.patch("os.path.isfile", return_value=True)
         read_strategy(strategy_file="strategy_file")
         from_config_mock.assert_called_once_with(strategy_file="strategy_file")
 
     @pytest.mark.usefixtures("from_pyproject_toml_raising")
-    def test_displays_error_if_no_valid_pyproject_toml_and_no_strategy_file(self, capsys):
+    def test_displays_error_if_no_valid_pyproject_toml_and_no_strategy_file(self, capsys, mocker):
+        mocker.patch("os.path.isfile", return_value=False)
         with pytest.raises(SystemExit) as exc:
-           read_strategy(strategy_file=None)
+            read_strategy(strategy_file="./liccheck.ini")
         assert exc.value.code == 1
         capture_result = capsys.readouterr()
         std, _ = capture_result
-        assert "Need to either configure pyproject.toml or provide a strategy file" in std.split("\n")
+        assert "Need to either configure pyproject.toml or provide an existing strategy file" in std.split("\n")
 
     @pytest.fixture
     def from_pyproject_toml_raising(self, mocker):
