@@ -33,7 +33,7 @@ setup(
 
     # Author details
     author='Dhatim',
-    author_email='dev-oss@dhatim.com',
+    author_email='contact@dhatim.com',
 
     # Choose your license
     license='Apache Software License',
