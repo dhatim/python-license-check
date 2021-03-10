@@ -23,4 +23,22 @@ jobs:
                     pip install -U tox tox-gh-actions setuptools wheel
                     pip install -r test-requirements.txt
             -   name: test with tox
+                env:
+                    PYTEST_ADDOPTS: "--strict --cov --cov-report=term-missing --cov-report=xml"
                 run: tox
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: get tag
+                id: get_tag
+                run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+            -   name: deploy on pypi
+                env:
+                    TAG: ${{ steps.get_tag.outputs.tag }}
+                run: |
+                    if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
+                    then
+                        # the tag looks like a version number: proceed with release
+                    fi
+            -   name: codecov
+                uses: codecov/codecov-action@v1
