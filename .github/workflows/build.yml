@@ -26,6 +26,8 @@ jobs:
                 env:
                     PYTEST_ADDOPTS: "--strict --cov --cov-report=term-missing --cov-report=xml"
                 run: tox
+            -   name: codecov
+                uses: codecov/codecov-action@v1
     deploy:
         runs-on: ubuntu-latest
         steps:
@@ -41,5 +43,3 @@ jobs:
                         # the tag looks like a version number: proceed with release
                         echo TODO
                     fi
-            -   name: codecov
-                uses: codecov/codecov-action@v1
