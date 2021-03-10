@@ -1,10 +1,9 @@
 .. image:: https://badge.fury.io/py/liccheck.svg
     :target: https://badge.fury.io/py/liccheck
-.. image:: https://travis-ci.org/dhatim/python-license-check.svg?branch=master
-    :target: https://travis-ci.org/dhatim/python-license-check
+.. image:: https://github.com/dhatim/python-license-check/workflows/build/badge.svg
+    :target: https://github.com/dhatim/python-license-check/actions
 .. image:: https://codecov.io/gh/dhatim/python-license-check/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/dhatim/python-license-check
-
 
 Python License Checker
 ======================

@@ -1,0 +1,26 @@
+name: build
+on:
+    push:
+        branches: [ '*' ]
+        tags: [ '*' ]
+    pull_request:
+        branches: [ '*' ]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: [ 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 ]
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: set up Python ${{ matrix.python-version }}
+                uses: actions/setup-python@v2
+                with:
+                    python-version: ${{ matrix.python-version }}
+            -   name: install dependencies
+                run: |
+                    python -m pip install --upgrade pip
+                    pip install -U tox tox-gh-actions setuptools wheel
+                    pip install -r test-requirements.txt
+            -   name: test with tox
+                run: tox
