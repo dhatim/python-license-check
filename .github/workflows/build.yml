@@ -39,6 +39,7 @@ jobs:
                     if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
                     then
                         # the tag looks like a version number: proceed with release
+                        echo TODO
                     fi
             -   name: codecov
                 uses: codecov/codecov-action@v1
