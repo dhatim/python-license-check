@@ -31,7 +31,7 @@ jobs:
     check:
         runs-on: ubuntu-latest
         outputs:
-            deploy: $ {{ steps.check_tag.outputs.deploy }}
+            deploy: ${{ steps.check_tag.outputs.deploy }}
         steps:
             -   name: check tag
                 id: check_tag
