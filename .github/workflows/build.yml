@@ -44,6 +44,10 @@ jobs:
                         # the tag looks like a version number: proceed with release deployment
                         echo ::set-output name=deploy::y
                     fi
+            -   name: build sdist
+                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
+                run: |
+                    python setup.py sdist
             -   name: deploy on pypi
                 if: ${{ steps.check_tag.outputs.deploy == 'y' }}
                 uses: pypa/gh-action-pypi-publish@master
