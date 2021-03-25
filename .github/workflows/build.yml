@@ -44,6 +44,8 @@ jobs:
                         # the tag looks like a version number: proceed with release deployment
                         echo ::set-output name=deploy::y
                     fi
+            -   uses: actions/checkout@v2
+                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
             -   name: build sdist
                 if: ${{ steps.check_tag.outputs.deploy == 'y' }}
                 run: |
