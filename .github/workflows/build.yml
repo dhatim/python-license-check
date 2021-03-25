@@ -31,26 +31,26 @@ jobs:
     check:
         runs-on: ubuntu-latest
         outputs:
-            deploy: ${{ steps.check_tag.outputs.deploy }}
+            release_version: ${{ steps.check_tag.outputs.release_version }}
         steps:
             -   name: check tag
                 id: check_tag
-                env:
-                    TAG: ${{ steps.get_tag.outputs.tag }}
                 run: |
-                    if echo "${GITHUB_REF#refs/*/}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
+                    TAG=${GITHUB_REF#refs/*/}
+                    if echo "$TAG" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
                     then
                         # the tag looks like a version number: will proceed with release deployment
-                        echo ::set-output name=deploy::y
+                        echo ::set-output name=release_version::$TAG
                     fi
     deploy:
         runs-on: ubuntu-latest
         needs: [ check, build ]
-        if: ${{ needs.check.outputs.deploy == 'y' }}
+        if: ${{ needs.check.outputs.release_version }}
         steps:
             -   uses: actions/checkout@v2
             -   name: build sdist
                 run: |
+                    export RELEASE_VERSION=${{ needs.check.outputs.release_version }}
                     python setup.py sdist
             -   name: deploy on pypi
                 uses: pypa/gh-action-pypi-publish@master
