@@ -34,12 +34,18 @@ jobs:
             -   name: get tag
                 id: get_tag
                 run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-            -   name: deploy on pypi
+            -   name: check tag
+                id: check_tag
                 env:
                     TAG: ${{ steps.get_tag.outputs.tag }}
                 run: |
                     if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
                     then
-                        # the tag looks like a version number: proceed with release
-                        echo TODO
+                        # the tag looks like a version number: proceed with release deployment
+                        echo ::set-output name=deploy::y
                     fi
+            -   name: deploy on pypi
+                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
+                uses: pypa/gh-action-pypi-publish@master
+                with:
+                    password: ${{ secrets.PYPI_API_TOKEN }}
