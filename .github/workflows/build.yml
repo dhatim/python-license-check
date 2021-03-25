@@ -6,6 +6,24 @@ on:
     pull_request:
         branches: [ '*' ]
 jobs:
+    check_tag:
+        runs-on: ubuntu-latest
+        outputs:
+            deploy: $ {{ steps.check_tag.deploy }}
+        steps:
+            -   name: get tag
+                id: get_tag
+                run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+            -   name: check tag
+                id: check_tag
+                env:
+                    TAG: ${{ steps.get_tag.outputs.tag }}
+                run: |
+                    if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
+                    then
+                        # the tag looks like a version number: will proceed with release deployment
+                        echo ::set-output name=deploy::y
+                    fi
     build:
         runs-on: ubuntu-latest
         strategy:
@@ -30,28 +48,14 @@ jobs:
                 uses: codecov/codecov-action@v1
     deploy:
         runs-on: ubuntu-latest
+        needs: [ check_tag, build ]
+        if: ${{ needs.check_tag.outputs.deploy == 'y' }}
         steps:
-            -   name: get tag
-                id: get_tag
-                run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-            -   name: check tag
-                id: check_tag
-                env:
-                    TAG: ${{ steps.get_tag.outputs.tag }}
-                run: |
-                    if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
-                    then
-                        # the tag looks like a version number: proceed with release deployment
-                        echo ::set-output name=deploy::y
-                    fi
             -   uses: actions/checkout@v2
-                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
             -   name: build sdist
-                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
                 run: |
                     python setup.py sdist
             -   name: deploy on pypi
-                if: ${{ steps.check_tag.outputs.deploy == 'y' }}
                 uses: pypa/gh-action-pypi-publish@master
                 with:
                     password: ${{ secrets.PYPI_API_TOKEN }}
