@@ -6,24 +6,6 @@ on:
     pull_request:
         branches: [ '*' ]
 jobs:
-    check:
-        runs-on: ubuntu-latest
-        outputs:
-            deploy: $ {{ steps.check_tag.outputs.deploy }}
-        steps:
-            -   name: get tag
-                id: get_tag
-                run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-            -   name: check tag
-                id: check_tag
-                env:
-                    TAG: ${{ steps.get_tag.outputs.tag }}
-                run: |
-                    if echo "${TAG}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
-                    then
-                        # the tag looks like a version number: will proceed with release deployment
-                        echo ::set-output name=deploy::y
-                    fi
     build:
         runs-on: ubuntu-latest
         strategy:
@@ -46,6 +28,21 @@ jobs:
                 run: tox
             -   name: codecov
                 uses: codecov/codecov-action@v1
+    check:
+        runs-on: ubuntu-latest
+        outputs:
+            deploy: $ {{ steps.check_tag.outputs.deploy }}
+        steps:
+            -   name: check tag
+                id: check_tag
+                env:
+                    TAG: ${{ steps.get_tag.outputs.tag }}
+                run: |
+                    if echo "${GITHUB_REF#refs/*/}" | egrep '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$'
+                    then
+                        # the tag looks like a version number: will proceed with release deployment
+                        echo ::set-output name=deploy::y
+                    fi
     deploy:
         runs-on: ubuntu-latest
         needs: [ check, build ]
