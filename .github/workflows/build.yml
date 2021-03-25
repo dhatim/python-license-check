@@ -23,7 +23,11 @@ jobs:
                     then
                         # the tag looks like a version number: will proceed with release deployment
                         echo ::set-output name=deploy::y
+                        echo ::debug::should deploy
                     fi
+            -   name: debug
+                run: |
+                    echo deploy=${{ steps.check_tag.outputs.deploy }}
     build:
         runs-on: ubuntu-latest
         strategy:
