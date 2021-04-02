@@ -110,13 +110,13 @@ class Reason(enum.Enum):
 
 
 def get_packages_info(requirement_file, no_deps=False):
-    regex_license = re.compile(r'License: (?P<license>[^\r\n]+)\r?\n')
-    regex_classifier = re.compile(r'Classifier: License :: OSI Approved :: (?P<classifier>[^\r\n]+)\r?\n')
+    regex_license = re.compile(r'License: (?P<license>.*)?$', re.M)
+    regex_classifier = re.compile(r'Classifier: License(?: :: OSI Approved)?(?: :: (?P<classifier>.*))?$', re.M)
 
     requirements = parse_requirements(requirement_file)
 
     def transform(dist):
-        licenses = get_license(dist) + get_license_OSI_classifiers(dist)
+        licenses = get_licenses_from_classifiers(dist) or get_license(dist) or []
         # Strip the useless "License" suffix and uniquify
         licenses = list(set([strip_license(l) for l in licenses]))
         return {
@@ -138,10 +138,13 @@ def get_packages_info(requirement_file, no_deps=False):
 
         return []
 
-    def get_license_OSI_classifiers(dist):
+    def get_licenses_from_classifiers(dist):
         if dist.has_metadata(dist.PKG_INFO):
             metadata = dist.get_metadata(dist.PKG_INFO)
-            return regex_classifier.findall(metadata)
+
+            # match might be found, but None if using the classifier:
+            # License :: OSI Approved
+            return [m for m in regex_classifier.findall(metadata) if m]
 
         return []
 
@@ -162,7 +165,7 @@ def get_packages_info(requirement_file, no_deps=False):
 def check_package(strategy, pkg, level=Level.STANDARD):
     whitelisted = (
             pkg['name'] in strategy.AUTHORIZED_PACKAGES and (
-                semantic_version.Spec(strategy.AUTHORIZED_PACKAGES[pkg['name']]).match(semantic_version.Version.coerce(pkg['version']))
+                semantic_version.SimpleSpec(strategy.AUTHORIZED_PACKAGES[pkg['name']]).match(semantic_version.Version.coerce(pkg['version']))
                 or (level == Level.STANDARD and strategy.AUTHORIZED_PACKAGES[pkg['name']] == '')
             )
     )

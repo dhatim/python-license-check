@@ -78,7 +78,7 @@ setup(
 
     python_requires='>=2.7',
 
-    install_requires=['semantic_version', 'toml'],
+    install_requires=['semantic_version>=2.7.0', 'toml'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
