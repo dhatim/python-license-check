@@ -37,9 +37,10 @@ jobs:
                     VERSION=${{ github.event.inputs.release_version }}
                     sed -i "s/version='.*'/version='$VERSION'/g" setup.py
                     git commit . -m "Bump version to ${VERSION}"
+                    git push origin master
                     git tag $VERSION
                     git push origin $VERSION
-                    python setup.py sdist
+x                    python setup.py sdist
             -   name: deploy on pypi
                 uses: pypa/gh-action-pypi-publish@master
                 with:
