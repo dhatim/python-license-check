@@ -40,7 +40,7 @@ jobs:
                     git push origin master
                     git tag $VERSION
                     git push origin $VERSION
-x                    python setup.py sdist
+                    python setup.py sdist
             -   name: deploy on pypi
                 uses: pypa/gh-action-pypi-publish@master
                 with:
