@@ -32,7 +32,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
-            -   name: build sdist
+            -   name: build sdist bdist_wheel
                 run: |
                     VERSION=${{ github.event.inputs.release_version }}
                     sed -i "s/version='.*'/version='$VERSION'/g" setup.py
@@ -41,7 +41,7 @@ jobs:
                     git push origin master
                     git tag $VERSION
                     git push origin $VERSION
-                    python setup.py sdist
+                    python setup.py sdist bdist_wheel
             -   name: deploy on pypi
                 uses: pypa/gh-action-pypi-publish@master
                 with:
