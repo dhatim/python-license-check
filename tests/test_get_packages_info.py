@@ -11,6 +11,7 @@ def test_license_strip(tmpfile):
     tmpfh.close()
     assert get_packages_info(tmppath)[0]["licenses"] == ["MIT"]
 
+
 def test_requirements_markers(tmpfile):
     tmpfh, tmppath = tmpfile
     tmpfh.write(
@@ -22,6 +23,19 @@ def test_requirements_markers(tmpfile):
         assert len(get_packages_info(tmppath)) == 2
     else:
         assert len(get_packages_info(tmppath)) == 1
+
+
+def test_editable_requirements_get_ignored(tmpfile):
+    tmpfh, tmppath = tmpfile
+    tmpfh.write(
+        "-e file:some_editable_req\n"
+        "pip\n"
+    )
+    tmpfh.close()
+
+    packages_info = get_packages_info(tmppath)
+    assert len(packages_info) == 1
+    assert packages_info[0]["name"] == "pip"
 
 
 @pytest.mark.parametrize(
