@@ -25,6 +25,10 @@ def parse_requirements(requirement_file):
     for req in pip_parse_requirements(requirement_file, session=PipSession()):
         install_req = install_req_from_parsed_requirement(req)
         if install_req.markers and not pkg_resources.evaluate_marker(str(install_req.markers)):
+            # req should not installed due to env markers
+            continue
+        elif install_req.editable:
+            # skip editable req as they are failing in the resolve phase
             continue
         requirements.append(pkg_resources.Requirement.parse(str(install_req.req)))
     return requirements
