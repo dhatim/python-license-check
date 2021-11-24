@@ -37,6 +37,11 @@ Paranoid:
     for the package to be considered compliant. A package is still
     compliant if present in the authorized packages list.
 
+Assumption
+==========
+The tool requires to be installed in the same python (virtual) environment as the packages. This, because it uses
+``pkg_resources`` to access the packages resources and thus, their licenses information.
+
 How to install
 ==============
 
@@ -129,6 +134,19 @@ If some dependencies are unknown or are not matching the strategy, the output wi
 	    feedparser (5.2.1) : UNKNOWN []
 	      dependency:
 	          feedparser
+
+
+Using liccheck with pre-commit
+==============================
+
+Add this to your .pre-commit-config.yaml:
+::
+
+    - repo: https://github.com/dhatim/python-license-check
+      rev: master
+      hooks:
+      - id: liccheck
+        language: system
 
 Contributing
 ============
