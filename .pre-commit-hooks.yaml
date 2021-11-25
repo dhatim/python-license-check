@@ -5,3 +5,4 @@
   args: []
   language: python
   files: ^(.*requirements.*\.txt|setup\.cfg|setup\.py|pyproject\.toml|liccheck\.ini)$
+  pass_filenames: false
