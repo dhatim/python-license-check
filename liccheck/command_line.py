@@ -151,10 +151,9 @@ def get_packages_info(requirement_file, no_deps=False):
 
         return []
     
-    def strip_license_for_windows(license):        
-        search_string = ".*\r$"
-        if re.search(search_string, license):            
-            return license[:-2]
+    def strip_license_for_windows(license):
+        if license.endswith("\r"):                                
+            return license[:-1]
         return license
     
     def strip_license(license):
