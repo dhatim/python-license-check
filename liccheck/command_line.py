@@ -16,8 +16,6 @@ import sys
 import semantic_version
 import toml
 
-import pkg_resources
-
 try:
     FileNotFoundError
 except NameError:
@@ -28,6 +26,17 @@ class NoValidConfigurationInPyprojectToml(BaseException):
     pass
 
 
+def from_pyproject_toml():
+    try:
+        pyproject_toml = toml.load("pyproject.toml")
+        try:
+            return pyproject_toml["tool"]["liccheck"]
+        except KeyError:
+            raise NoValidConfigurationInPyprojectToml
+    except FileNotFoundError:
+        raise NoValidConfigurationInPyprojectToml
+
+
 class Strategy:
     def __init__(self, authorized_licenses, unauthorized_licenses, authorized_packages):
         self.AUTHORIZED_LICENSES = authorized_licenses
@@ -36,15 +45,7 @@ class Strategy:
 
     @classmethod
     def from_pyproject_toml(cls):
-        try:
-            pyproject_toml = toml.load("pyproject.toml")
-        except FileNotFoundError:
-            raise NoValidConfigurationInPyprojectToml
-
-        try:
-            liccheck_section = pyproject_toml["tool"]["liccheck"]
-        except KeyError:
-            raise NoValidConfigurationInPyprojectToml
+        liccheck_section = from_pyproject_toml()
 
         def elements_to_lower_str(lst):
             return [str(_).lower() for _ in lst]
@@ -334,9 +335,63 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
+def merge_args(args):
+    try:
+        config = from_pyproject_toml()
+    except NoValidConfigurationInPyprojectToml:
+        return args
+    return {
+        'strategy_ini_file': config.get('strategy_ini_file', args['strategy_ini_file']),
+        'requirement_txt_file': config.get('requirement_txt_file', args['requirement_txt_file']),
+        'level': config.get('level', args['level']),
+        'reporting_txt_file': config.get('reporting_txt_file', args['reporting_txt_file']),
+        'no_deps': config.get('no_deps', args['no_deps']),
+        'dependencies': config.get('dependencies', args['dependencies']),
+        'optional_dependencies': config.get('optional_dependencies', args['optional_dependencies'])
+    }
+
+
+def generate_requirements_file_from_pyproject(include_dependencies, extra_dependencies):
+    import tempfile
+    directory = tempfile.mkdtemp(prefix='liccheck_')
+    requirements_txt_file = directory + '/requirements.txt'
+    with open(requirements_txt_file, 'w') as f:
+        project = toml.load('pyproject.toml').get('project', {})
+        dependencies = project.get('dependencies', []) if include_dependencies else []
+        optional_dependencies = project.get('optional-dependencies', {}) if extra_dependencies else {}
+        for extra_dependency in extra_dependencies:
+            if extra_dependency in optional_dependencies:
+                dependencies += optional_dependencies[extra_dependency]
+        f.write(os.linesep.join(dependencies))
+    return requirements_txt_file
+
+
 def run(args):
-    strategy = read_strategy(args.strategy_ini_file)
-    return process(args.requirement_txt_file, strategy, args.level, args.reporting_txt_file, args.no_deps)
+    args = merge_args({
+        'strategy_ini_file': args.strategy_ini_file,
+        'requirement_txt_file': args.requirement_txt_file,
+        'level': args.level,
+        'reporting_txt_file': args.reporting_txt_file,
+        'no_deps': args.no_deps,
+        'dependencies': False,
+        'optional_dependencies': []
+    })
+    strategy = read_strategy(args['strategy_ini_file'])
+    requirements_file_generated = False
+    if args['dependencies'] is True or len(args['optional_dependencies']) > 0:
+        args['requirement_txt_file'] = generate_requirements_file_from_pyproject(
+            args['dependencies'],
+            args['optional_dependencies']
+        )
+        requirements_file_generated = True
+    try:
+        return process(args['requirement_txt_file'], strategy, args['level'], args['reporting_txt_file'],
+                       args['no_deps'])
+    finally:
+        if requirements_file_generated:
+            import pathlib
+            import shutil
+            shutil.rmtree(pathlib.Path(args['requirement_txt_file']).parent, ignore_errors=True)
 
 
 def main():
