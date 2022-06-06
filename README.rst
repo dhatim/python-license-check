@@ -135,6 +135,64 @@ If some dependencies are unknown or are not matching the strategy, the output wi
 	      dependency:
 	          feedparser
 
+Also supports pyproject.toml like:
+::
+
+    [project]
+    dependencies = [
+        "Flask>=0.12.1",
+        "flask_restful",
+        "jsonify",
+        "psycopg2>=2.7.1",
+        "nose",
+        "scipy",
+        "scikit-learn",
+        "pandas",
+        "numpy",
+        "argparse",
+        "uuid",
+        "sqlbuilder",
+        "proboscis",
+	    "pyyaml>=3.12",
+    ]
+
+    [project.optional-dependencies]
+    test = [
+        "pytest>=3.6.3",
+    ]
+
+    [tool.liccheck]
+    authorized_licenses = [
+        "bsd",
+		"new bsd",
+		"bsd license",
+		"new bsd license",
+		"simplified bsd",
+		"apache",
+		"apache 2.0",
+		"apache software license",
+		"gnu lgpl",
+		"lgpl with exceptions or zpl",
+		"isc license",
+		"isc license (iscl)",
+		"mit",
+		"mit license",
+		"python software foundation license",
+		"zpl 2.1",
+    ]
+    unauthorized_licenses = [
+        "gpl v3",
+    ]
+    # strategy_ini_file = "./liccheck.ini"
+    # level = "STANDARD"
+    # requirement_txt_file = "./requirements.txt" # ignored if dependencies or optional_dependencies are defined
+    # reporting_txt_file = "path/to/reporting.txt file" # by default is None
+    # no_deps = false
+    dependencies = true # to load [project.dependencies]
+    optional_dependencies = ["test"] # to load extras from [project.optional-dependencies]
+
+    [tool.liccheck.authorized_packages]
+    uuid = 1.30
 
 Using liccheck with pre-commit
 ==============================
