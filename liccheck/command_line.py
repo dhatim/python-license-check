@@ -219,7 +219,7 @@ def find_parents(package, all, seen):
 
 
 def write_package(package, all, no_deps=False):
-    licenses = package['licenses'] or 'UNKNOWN'
+    licenses = sorted(package['licenses']) or 'UNKNOWN'
     print('    {} ({}): {}'.format(package['name'], package['version'], licenses))
     if not no_deps:
         write_deps(package, all)

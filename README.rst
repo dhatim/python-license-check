@@ -153,7 +153,7 @@ Also supports pyproject.toml like:
         "uuid",
         "sqlbuilder",
         "proboscis",
-	    "pyyaml>=3.12",
+        "pyyaml>=3.12",
     ]
 
     [project.optional-dependencies]
@@ -164,21 +164,21 @@ Also supports pyproject.toml like:
     [tool.liccheck]
     authorized_licenses = [
         "bsd",
-		"new bsd",
-		"bsd license",
-		"new bsd license",
-		"simplified bsd",
-		"apache",
-		"apache 2.0",
-		"apache software license",
-		"gnu lgpl",
-		"lgpl with exceptions or zpl",
-		"isc license",
-		"isc license (iscl)",
-		"mit",
-		"mit license",
-		"python software foundation license",
-		"zpl 2.1",
+        "new bsd",
+        "bsd license",
+        "new bsd license",
+        "simplified bsd",
+        "apache",
+        "apache 2.0",
+        "apache software license",
+        "gnu lgpl",
+        "lgpl with exceptions or zpl",
+        "isc license",
+        "isc license (iscl)",
+        "mit",
+        "mit license",
+        "python software foundation license",
+        "zpl 2.1",
     ]
     unauthorized_licenses = [
         "gpl v3",
