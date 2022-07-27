@@ -343,7 +343,7 @@ def merge_args(args):
     return {
         'strategy_ini_file': config.get('strategy_ini_file', args['strategy_ini_file']),
         'requirement_txt_file': config.get('requirement_txt_file', args['requirement_txt_file']),
-        'level': config.get('level', args['level']),
+        'level': Level.starting(config.get('level', args['level'].value)),
         'reporting_txt_file': config.get('reporting_txt_file', args['reporting_txt_file']),
         'no_deps': config.get('no_deps', args['no_deps']),
         'dependencies': config.get('dependencies', args['dependencies']),
