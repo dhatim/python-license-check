@@ -192,7 +192,7 @@ Also supports pyproject.toml like:
     optional_dependencies = ["test"] # to load extras from [project.optional-dependencies]
 
     [tool.liccheck.authorized_packages]
-    uuid = 1.30
+    uuid = "1.30"
 
 Using liccheck with pre-commit
 ==============================
