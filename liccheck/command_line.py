@@ -311,7 +311,6 @@ def process(
     no_deps=False,
     as_regex=False,
 ):
-    print(strategy.AUTHORIZED_REGEX)
     print("gathering licenses...")
     pkg_info = get_packages_info(requirement_file, no_deps)
     all = list(pkg_info)
