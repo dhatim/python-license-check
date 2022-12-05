@@ -213,9 +213,7 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
     if whitelisted:
         return Reason.OK
 
-    def check_one(
-        license_str: str, license_rule: str = "AUTHORIZED", as_regex: bool = False
-    ):
+    def check_one(license_str, license_rule="AUTHORIZED", as_regex=False):
         if as_regex:
             license_regex = getattr(strategy, f"{license_rule}_REGEX")
             return license_regex.search(license_str) is not None
