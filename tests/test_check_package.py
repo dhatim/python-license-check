@@ -7,16 +7,6 @@ UNAUTH = Reason.UNAUTHORIZED
 UNKNOWN = Reason.UNKNOWN
 
 
-# @pytest.fixture(scope="session")
-# def strategy():
-#     strategy = Strategy(
-#         authorized_licenses=["authorized 1", "authorized 2"],
-#         unauthorized_licenses=["unauthorized 1", "unauthorized 2"],
-#         authorized_packages={"whitelisted": "1"},
-#     )
-#     return strategy
-
-
 @pytest.fixture(scope="session")
 def packages():
     return [
