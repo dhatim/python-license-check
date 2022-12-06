@@ -215,10 +215,10 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
 
     def check_one(license_str, license_rule="AUTHORIZED", as_regex=False):
         if as_regex:
-            license_regex = getattr(strategy, f"{license_rule}_REGEX")
+            license_regex = getattr(strategy, "{}_REGEX".format(license_rule))
             return license_regex.search(license_str) is not None
         else:
-            license_list = getattr(strategy, f"{license_rule}_LICENSES")
+            license_list = getattr(strategy, "{}_LICENSES".format(license_rule))
             return license_str in license_list
 
     at_least_one_unauthorized = False
