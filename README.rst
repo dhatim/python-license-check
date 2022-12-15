@@ -192,7 +192,7 @@ Also supports pyproject.toml like:
     optional_dependencies = ["test"] # to load extras from [project.optional-dependencies]
 
     [tool.liccheck.authorized_packages]
-    uuid = 1.30
+    uuid = "1.30"
 
 By default, exact matching is required between each package's license and one of the license of the authorized or unauthorized list.
 You can also provide regular expressions to match licenses by using the ``as_regex`` boolean flag. For instance, to exclude GPL licenses,
