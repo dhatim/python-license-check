@@ -223,16 +223,16 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
 
     at_least_one_unauthorized = False
     count_authorized = 0
-    for license in pkg["licenses"]:
-        lower = license.lower()
+    licenses = get_license_names(pkg["licenses"])
+    for license in licenses:
         if check_one(
-            lower,
+            license,
             license_rule="UNAUTHORIZED",
             as_regex=as_regex,
         ):
             at_least_one_unauthorized = True
         if check_one(
-            lower,
+            license,
             license_rule="AUTHORIZED",
             as_regex=as_regex,
         ):
@@ -247,7 +247,7 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
         )
         or (
             count_authorized
-            and count_authorized == len(pkg["licenses"])
+            and count_authorized == len(licenses)
             and level is Level.PARANOID
         )
     ):
@@ -259,6 +259,14 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
 
     return Reason.UNKNOWN
 
+def get_license_names(licenses):
+    names = []
+    for license in licenses:
+        license = license.lower()
+        options = license.split(" or ")
+        for option in options:
+            names.append(option)
+    return names
 
 def find_parents(package, all, seen):
     if package in seen:

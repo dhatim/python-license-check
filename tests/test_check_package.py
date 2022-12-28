@@ -26,6 +26,11 @@ def packages():
             "licenses": ["authorized 1", "unauthorized 1"],
         },
         {
+            "name": "auth_one_or_unauth_one",
+            "version": "2",
+            "licenses": ["authorized 1 or unauthorized 1"],
+        },
+        {
             "name": "unauth_one",
             "version": "2",
             "licenses": ["unauthorized 1"],
@@ -77,9 +82,9 @@ def packages():
 @pytest.mark.parametrize(
     ("level", "reasons"),
     [
-        (Level.STANDARD, [OK, OK, OK, UNAUTH, OK, UNAUTH, OK, UNKNOWN]),
-        (Level.CAUTIOUS, [OK, OK, UNAUTH, UNAUTH, OK, UNAUTH, OK, UNKNOWN]),
-        (Level.PARANOID, [OK, OK, UNAUTH, UNAUTH, OK, UNAUTH, UNKNOWN, UNKNOWN]),
+        (Level.STANDARD, [OK, OK, OK, OK, UNAUTH, OK, UNAUTH, OK, UNKNOWN]),
+        (Level.CAUTIOUS, [OK, OK, UNAUTH, UNAUTH, UNAUTH, OK, UNAUTH, OK, UNKNOWN]),
+        (Level.PARANOID, [OK, OK, UNAUTH, UNAUTH, UNAUTH, OK, UNAUTH, UNKNOWN, UNKNOWN]),
     ],
     ids=[level.name for level in Level],
 )
