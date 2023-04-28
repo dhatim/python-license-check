@@ -43,6 +43,13 @@ class TestReadFromPyprojectToml:
             "uuid": "1.30"
         }
 
+    @pytest.mark.usefixtures("pyproject_toml_poetry_in_cwd")
+    def test_with_poetry_toml(self):
+        strategy = Strategy.from_pyproject_toml()
+        assert "python software foundation license" in strategy.AUTHORIZED_LICENSES
+        assert "gpl v3" in strategy.UNAUTHORIZED_LICENSES
+
+
     @pytest.fixture
     def empty_pyproject_toml_in_cwd(self, tmpdir):
         cwd = os.getcwd()
@@ -67,6 +74,68 @@ class TestReadFromPyprojectToml:
                 ]
                 [tool.liccheck.authorized_packages]
                 uuid = "1.30"
+                """
+            )
+
+    @pytest.fixture
+    def pyproject_toml_poetry_in_cwd(self, empty_pyproject_toml_in_cwd):
+        with open("pyproject.toml", "w") as file:
+            file.write(
+                """
+                [tool.poetry]
+                name = "liccheck"
+                version = "0.8.3"
+                description = "Check python packages from requirement.txt and report issues"
+                authors = ["Dhatim <contact@dhatim.com>"]
+                license = "Apache Software License"
+                readme = "README.rst"
+
+                [tool.poetry.dependencies]
+                python = "^3.9"
+                semantic-version = "^2.10.0"
+                toml = "^0.10.2"
+
+                [tool.poetry.group.dev.dependencies]
+                pytest = ">=3.6.3"
+                pytest-cov = "^4.0.0"
+                python3-openid = "^3.2.0"
+                pytest-mock = ">=1.10"
+
+                [build-system]
+                requires = ["poetry-core"]
+                build-backend = "poetry.core.masonry.api"
+
+                [tool.poetry.scripts]
+                liccheck = 'liccheck.command_line:main'
+
+                [tool.liccheck]
+                authorized_licenses = [
+                    "new BSD",
+                    "BSD license",
+                    "new BDS license",
+                    "simplified BSD",
+                    "Apache",
+                    "Apache 2.0",
+                    "Apache software license",
+                    "gnu LGPL",
+                    "LGPL with exceptions or zpl",
+                    "ISC license",
+                    "ISC license (ISCL)",
+                    "MIT",
+                    "MIT license",
+                    "python software foundation license",
+                    "zpl 2.1"
+                ]
+                unauthorized_licenses = [
+                    "GPL v3",
+                    "GPL2",
+                    "GNU General Public License v2 or later (GPLv2+)"
+                ]
+                authorized_packages = [
+                    "uuid: 1.25,>=1.30"
+                ]
+                dependencies = true
+                optional_dependencies = ['*']
                 """
             )
 
