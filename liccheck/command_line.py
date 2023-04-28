@@ -455,21 +455,29 @@ def merge_args(args):
     }
 
 
-def generate_requirements_file_from_pyproject(include_dependencies, extra_dependencies):
+def generate_requirements_file_from_pyproject(include_dependencies, optional_dependencies):
     import tempfile
 
     directory = tempfile.mkdtemp(prefix="liccheck_")
     requirements_txt_file = directory + "/requirements.txt"
     with open(requirements_txt_file, "w") as f:
-        project = toml.load("pyproject.toml").get("project", {})
-        dependencies = project.get("dependencies", []) if include_dependencies else []
-        optional_dependencies = (
-            project.get("optional-dependencies", {}) if extra_dependencies else {}
-        )
-        for extra_dependency in extra_dependencies:
-            if extra_dependency in optional_dependencies:
-                dependencies += optional_dependencies[extra_dependency]
-        f.write(os.linesep.join(dependencies))
+        ptoml = toml.load("pyproject.toml")
+        project = ptoml.get("project", {})
+        poetry = ptoml.get("tool", {}).get('poetry', {})
+        dependencies = set()
+        if include_dependencies:
+            dependencies |= set(project.get("dependencies", []))
+            dependencies |= set(d for d, v in poetry.get("dependencies", {}).items() 
+                                if d != 'python' and (not isinstance(v, dict) or not v.get('optional')))
+        if optional_dependencies:
+            extra_dependency = project.get("optional-dependencies", {})
+            extra_dependency.update(poetry.get("extras", {}))
+            if '*' in optional_dependencies:
+                optional_dependencies = extra_dependency.keys()
+            for opt in optional_dependencies:
+                extralist = extra_dependency.get(opt, [])
+                dependencies |= set(extralist)
+        f.write(os.linesep.join(sorted(dependencies)))
     return requirements_txt_file
 
 
