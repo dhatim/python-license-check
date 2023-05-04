@@ -262,10 +262,9 @@ def check_package(strategy, pkg, level=Level.STANDARD, as_regex=False):
 def get_license_names(licenses):
     names = []
     for license in licenses:
-        license = license.lower()
-        options = license.split(" or ")
+        options = license.split(" OR ")
         for option in options:
-            names.append(option)
+            names.append(option.lower())
     return names
 
 def find_parents(package, all, seen):
