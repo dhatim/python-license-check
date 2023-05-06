@@ -36,6 +36,7 @@ jobs:
                 run: |
                     VERSION=${{ github.event.inputs.release_version }}
                     sed -i "s/version='.*'/version='$VERSION'/g" setup.py
+                    git config user.email contact@dhatim.com
                     git config user.name ${{ github.actor }}
                     git commit . -m "Bump version to ${VERSION}"
                     git push origin master
