@@ -12,7 +12,7 @@ jobs:
             matrix:
                 python-version: [ '2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11' ]
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
             -   name: set up Python ${{ matrix.python-version }}
                 uses: actions/setup-python@v4
                 with:
@@ -31,7 +31,7 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
             -   name: build sdist bdist_wheel
                 run: |
                     VERSION=${{ github.event.inputs.release_version }}
