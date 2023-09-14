@@ -26,4 +26,4 @@ jobs:
                     PYTEST_ADDOPTS: "--strict --cov --cov-report=term-missing --cov-report=xml"
                 run: tox
             -   name: codecov
-                uses: codecov/codecov-action@v3
+                uses: codecov/codecov-action@v4
