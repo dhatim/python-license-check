@@ -4,10 +4,7 @@ import os.path
 
 from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
 
-try:
-    from configparser import ConfigParser, NoOptionError
-except ImportError:
-    from ConfigParser import ConfigParser, NoOptionError
+from configparser import ConfigParser, NoOptionError
 import enum
 import functools
 import re

@@ -56,8 +56,6 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -76,23 +74,9 @@ setup(
     # this:
     #   py_modules=["my_module"],
 
-    python_requires='>=2.7',
+    python_requires='>=3.5',
 
     install_requires=['semantic_version>=2.7.0', 'toml'],
-
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). You can install these using the following syntax,
-    # for example:
-    # $ pip install -e .[dev,test]
-    extras_require={
-        ':python_version < "3.4"': [
-            'ConfigParser',
-            'enum34',
-        ],
-        ':python_version >= "3.4"': [
-            'configparser',
-        ],
-    },
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these

@@ -15,14 +15,13 @@ def test_license_strip(tmpfile):
 def test_requirements_markers(tmpfile):
     tmpfh, tmppath = tmpfile
     tmpfh.write(
-        "python-openid;python_version<=\"2.7\"\n"
-        "python3-openid;python_version>=\"3.0\"\n"
+        "python3-openid;python_version>=\"3.9\"\n"
     )
     tmpfh.close()
-    if sys.version_info.major == 3:
+    if sys.version_info.minor >= 9:
         assert len(get_packages_info(tmppath)) == 2
     else:
-        assert len(get_packages_info(tmppath)) == 1
+        assert len(get_packages_info(tmppath)) == 0
 
 
 def test_editable_requirements_get_ignored(tmpfile):
@@ -42,11 +41,7 @@ def test_editable_requirements_get_ignored(tmpfile):
     ('no_deps', 'expected_packages'), (
         pytest.param(
             False,
-            ('configparser', 'liccheck', 'semantic-version', 'toml'),
-            marks=pytest.mark.skipif(
-                sys.version_info[0] < 3,
-                reason='with py2 there are more dependencies',
-            ),
+            ('liccheck', 'semantic-version', 'toml'),
             id='with deps'
         ),
         pytest.param(True, ('liccheck',), id='without deps'),
