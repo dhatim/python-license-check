@@ -1,5 +1,6 @@
 import sys
 
+import pkg_resources
 import pytest
 
 from liccheck.command_line import get_packages_info
@@ -59,3 +60,21 @@ def test_deps(tmpfile, no_deps, expected_packages):
     packages_info = get_packages_info(tmppath, no_deps)
     packages = tuple(package['name'] for package in packages_info)
     assert packages == expected_packages
+
+
+def test_license_expression(tmp_path, mocker):
+    resolve = mocker.patch("liccheck.command_line.resolve")
+    req_path = tmp_path.joinpath("requirements.txt").as_posix()
+    with open(req_path, "w") as tmpfh:
+        tmpfh.write("Twisted\n")
+    pkg_info_path = tmp_path.joinpath("PKG-INFO").as_posix()
+    with open(pkg_info_path, "w") as tmpfh:
+        tmpfh.write("Metadata-Version: 2.1\n")
+        tmpfh.write("Name: Twisted\n")
+        tmpfh.write("Version: 23.8.0\n")
+        tmpfh.write("License-Expression: MIT\n")
+    metadata = pkg_resources.FileMetadata(pkg_info_path)
+    resolve.return_value = [
+        pkg_resources.Distribution(project_name="Twisted", metadata=metadata)
+    ]
+    assert get_packages_info(req_path)[0]["licenses"] == ["MIT"]

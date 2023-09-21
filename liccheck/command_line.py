@@ -141,7 +141,7 @@ class Reason(enum.Enum):
 
 
 def get_packages_info(requirement_file, no_deps=False):
-    regex_license = re.compile(r"License: (?P<license>.*)?$", re.M)
+    regex_license = re.compile(r"License(?:-Expression)?: (?P<license>.*)?$", re.M)
     regex_classifier = re.compile(
         r"Classifier: License(?: :: OSI Approved)?(?: :: (?P<classifier>.*))?$", re.M
     )
