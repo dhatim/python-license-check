@@ -192,7 +192,7 @@ def get_packages_info(requirement_file, no_deps=False):
         return license
 
     resolve_func = resolve_without_deps if no_deps else resolve
-    packages = [transform(str(dist)) for dist in resolve_func(requirements)]
+    packages = [transform(dist) for dist in resolve_func(requirements)]
     # keep only unique values as there are maybe some duplicates
     unique = []
     [unique.append(item) for item in packages if item not in unique]
