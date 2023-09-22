@@ -147,10 +147,10 @@ def get_packages_info(requirement_file, no_deps=False):
 
     def transform(dist):
         licenses = get_licenses_from_classifiers(dist) or get_license(dist) or []
-        # Strip the useless "License" suffix and uniquify
-        licenses = list(set([strip_license(l) for l in licenses]))
         # Removing Trailing windows generated \r
         licenses = list(set([strip_license_for_windows(l) for l in licenses]))
+        # Strip the useless "License" suffix and uniquify
+        licenses = list(set([strip_license(l) for l in licenses]))
 
         return {
             "name": dist.project_name,
