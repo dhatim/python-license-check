@@ -15,10 +15,10 @@ def test_license_strip(tmpfile):
 
 def test_license_strip_with_return_carriage(tmp_path, mocker):
     resolve = mocker.patch("liccheck.command_line.resolve")
-    req_path = tmp_path.joinpath("requirements.txt")
+    req_path = tmp_path.join("requirements.txt")
     with open(req_path, "w") as tmpfh:
         tmpfh.write("pip\n")
-    pkg_info_path = tmp_path.joinpath("PKG-INFO")
+    pkg_info_path = tmp_path.join("PKG-INFO")
     with open(pkg_info_path, "wb") as tmpfh:
         tmpfh.write(b"Metadata-Version: 2.1\r\n")
         tmpfh.write(b"Name: pip\r\n")
@@ -77,10 +77,10 @@ def test_deps(tmpfile, no_deps, expected_packages):
 
 def test_license_expression(tmp_path, mocker):
     resolve = mocker.patch("liccheck.command_line.resolve")
-    req_path = tmp_path.joinpath("requirements.txt")
+    req_path = tmp_path.join("requirements.txt")
     with open(req_path, "w") as tmpfh:
         tmpfh.write("Twisted\n")
-    pkg_info_path = tmp_path.joinpath("PKG-INFO")
+    pkg_info_path = tmp_path.join("PKG-INFO")
     with open(pkg_info_path, "w") as tmpfh:
         tmpfh.write("Metadata-Version: 2.1\n")
         tmpfh.write("Name: Twisted\n")
