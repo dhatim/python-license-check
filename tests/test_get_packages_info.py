@@ -28,7 +28,7 @@ def test_license_strip_with_return_carriage(tmp_path, mocker):
     resolve.return_value = [
         pkg_resources.Distribution(project_name="pip", metadata=metadata)
     ]
-    assert get_packages_info(req_path)[0]["licenses"] == ["MIT"]
+    assert get_packages_info(str(req_path))[0]["licenses"] == ["MIT"]
 
 
 def test_requirements_markers(tmpfile):
