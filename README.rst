@@ -4,6 +4,9 @@
     :target: https://github.com/dhatim/python-license-check/actions
 .. image:: https://codecov.io/gh/dhatim/python-license-check/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/dhatim/python-license-check
+.. image:: https://assets.piptrends.com/get-last-month-downloads-badge/liccheck.svg
+    :alt: liccheck Downloads Last Month by pip Trends
+    :target: https://piptrends.com/package/liccheck
 
 Python License Checker
 ======================
