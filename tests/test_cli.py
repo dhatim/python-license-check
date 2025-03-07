@@ -12,11 +12,13 @@ def test_parse_arguments():
     args = parse_args(['--sfile', 'my_strategy.ini'])
     assert args.strategy_ini_file == 'my_strategy.ini'
     assert args.requirement_txt_file == './requirements.txt'
+    assert args.as_regex is False
     assert args.level is Level.STANDARD
     assert args.no_deps is False
     args = parse_args(['--sfile', 'my_strategy.ini', '--rfile', 'my_requirements.txt', '--level', 'cautious'])
     assert args.strategy_ini_file == 'my_strategy.ini'
     assert args.requirement_txt_file == 'my_requirements.txt'
+    assert args.as_regex is False
     assert args.level is Level.CAUTIOUS
     assert args.no_deps is False
     args = parse_args(['--sfile', 'my_strategy.ini', '--rfile', 'my_requirements.txt', '--level', 'cautious', '--no-deps'])
@@ -24,7 +26,14 @@ def test_parse_arguments():
     assert args.requirement_txt_file == 'my_requirements.txt'
     assert args.level is Level.CAUTIOUS
     assert args.no_deps is True
+    assert args.as_regex is False
 
+    args = parse_args(["--sfile", "my_strategy.ini", "--as-regex"])
+    assert args.strategy_ini_file == "my_strategy.ini"
+    assert args.requirement_txt_file == "./requirements.txt"
+    assert args.level is Level.STANDARD
+    assert args.no_deps is False
+    assert args.as_regex is True
 
 def test_read_strategy():
     args = parse_args(['--sfile', 'liccheck.ini'])
