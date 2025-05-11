@@ -432,6 +432,12 @@ def parse_args(args):
         help="don't check dependencies",
         action="store_true",
     )
+    parser.add_argument(
+        "--as-regex",
+        dest="as_regex",
+        help="enable regular expression matching for licenses",
+        action="store_true",
+    )
 
     return parser.parse_args(args)
 
