@@ -146,7 +146,7 @@ def get_packages_info(requirement_file, no_deps=False):
     requirements = parse_requirements(requirement_file)
 
     def transform(dist):
-        licenses = get_licenses_from_classifiers(dist) or get_license(dist) or []
+        licenses = get_license(dist) or get_licenses_from_classifiers(dist) or []
         # Removing Trailing windows generated \r
         licenses = list(set([strip_license_for_windows(l) for l in licenses]))
         # Strip the useless "License" suffix and uniquify
