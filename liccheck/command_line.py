@@ -73,6 +73,11 @@ class Strategy:
         def elements_to_lower_str(lst):
             return [str(_).lower() for _ in lst]
 
+        conf_keys = {"authorized_licenses", "unauthorized_licenses",
+                     "authorized_packages"}
+        if not set(liccheck_section.keys()) & conf_keys:
+            raise NoValidConfigurationInPyprojectToml
+
         strategy = cls(
             authorized_licenses=elements_to_lower_str(
                 liccheck_section.get("authorized_licenses", [])

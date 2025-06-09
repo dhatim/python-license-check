@@ -28,6 +28,11 @@ class TestReadFromPyprojectToml:
         with pytest.raises(NoValidConfigurationInPyprojectToml):
             Strategy.from_pyproject_toml()
 
+    @pytest.mark.usefixtures("pyproject_toml_with_liccheck_section_without_licenses_in_cwd")
+    def test_falls_back_to_strategy_if_liccheck_section_in_pyproject_toml_has_no_licenses(self):
+        with pytest.raises(NoValidConfigurationInPyprojectToml):
+            Strategy.from_pyproject_toml()
+
     @pytest.mark.usefixtures("pyproject_toml_with_liccheck_section_in_cwd")
     def test_with_liccheck_section_in_pyproject_toml(self):
         strategy = Strategy.from_pyproject_toml()
@@ -57,6 +62,17 @@ class TestReadFromPyprojectToml:
         open("pyproject.toml", "w").close()
         yield
         os.chdir(cwd)
+
+    @pytest.fixture
+    def pyproject_toml_with_liccheck_section_without_licenses_in_cwd(self, empty_pyproject_toml_in_cwd):
+        with open("pyproject.toml", "w") as file:
+            file.write(
+                """
+                [tool.liccheck]
+                # No licenses are defined here, just point to the strategy file.
+                strategy_ini_file = "./liccheck.ini"
+                """
+            )
 
     @pytest.fixture
     def pyproject_toml_with_liccheck_section_in_cwd(self, empty_pyproject_toml_in_cwd):
