@@ -1,6 +1,6 @@
 import sys
 
-import pkg_resources
+import importlib.metadata as ilm
 import pytest
 
 from liccheck.command_line import get_packages_info
@@ -24,10 +24,7 @@ def test_license_strip_with_return_carriage(tmp_path, mocker):
         tmpfh.write(b"Name: pip\r\n")
         tmpfh.write(b"Version: 23.3.1\r\n")
         tmpfh.write(b"Classifier: License :: OSI Approved :: MIT License\r\n")
-    metadata = pkg_resources.PathMetadata(tmp_path, tmp_path)
-    resolve.return_value = [
-        pkg_resources.Distribution(project_name="pip", metadata=metadata)
-    ]
+    resolve.return_value = [ilm.Distribution.at(tmp_path)]
     assert get_packages_info(req_path)[0]["licenses"] == ["MIT"]
 
 
@@ -86,8 +83,5 @@ def test_license_expression(tmp_path, mocker):
         tmpfh.write("Name: Twisted\n")
         tmpfh.write("Version: 23.8.0\n")
         tmpfh.write("License-Expression: MIT\n")
-    metadata = pkg_resources.FileMetadata(pkg_info_path)
-    resolve.return_value = [
-        pkg_resources.Distribution(project_name="Twisted", metadata=metadata)
-    ]
+    resolve.return_value = [ilm.Distribution.at(tmp_path)]
     assert get_packages_info(req_path)[0]["licenses"] == ["MIT"]

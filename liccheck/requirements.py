@@ -1,4 +1,6 @@
-import pkg_resources
+import importlib.metadata as ilm
+from packaging.markers import Marker, default_environment
+from packaging.requirements import Requirement
 
 try:
     from pip._internal.network.session import PipSession
@@ -24,29 +26,21 @@ def parse_requirements(requirement_file):
     requirements = []
     for req in pip_parse_requirements(requirement_file, session=PipSession()):
         install_req = install_req_from_parsed_requirement(req)
-        if install_req.markers and not pkg_resources.evaluate_marker(str(install_req.markers)):
+        if install_req.markers is not None and not install_req.markers.evaluate():
             # req should not installed due to env markers
             continue
         elif install_req.editable:
             # skip editable req as they are failing in the resolve phase
             continue
-        requirements.append(pkg_resources.Requirement.parse(str(install_req.req)))
+        requirements.append(install_req.req)
     return requirements
 
 
-def resolve_without_deps(requirements):
-    working_set = pkg_resources.working_set
+def resolve(requirements, without_deps=False):
     for req in requirements:
-        env = pkg_resources.Environment(working_set.entries)
-        dist = env.best_match(
-            req=req,
-            working_set=working_set,
-            installer=None,
-            replace_conflicting=False,
-        )
+        dist = ilm.distribution(req.name)
         yield dist
-
-
-def resolve(requirements):
-    for dist in pkg_resources.working_set.resolve(requirements):
-        yield dist
+        if not without_deps and dist.requires is not None:
+            requires = [Requirement(r) for r in dist.requires]
+            requires = [r for r in requires if r.marker is None or r.marker.evaluate()]
+            yield from resolve(requires)

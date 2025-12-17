@@ -2,13 +2,14 @@ import argparse
 import collections
 import os.path
 
-from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
+from liccheck.requirements import parse_requirements, resolve
 
 from configparser import ConfigParser, NoOptionError
 import enum
 import functools
 import re
 import textwrap
+from packaging.requirements import Requirement
 import sys
 import semantic_version
 import toml
@@ -138,10 +139,7 @@ class Reason(enum.Enum):
 
 
 def get_packages_info(requirement_file, no_deps=False):
-    regex_license = re.compile(r"License(?:-Expression)?: (?P<license>.*)?$", re.M)
-    regex_classifier = re.compile(
-        r"Classifier: License(?: :: OSI Approved)?(?: :: (?P<classifier>.*))?$", re.M
-    )
+    regex_classifier = re.compile(r"^License(?: :: OSI Approved)?(?: :: (?P<classifier>.*))?$")
 
     requirements = parse_requirements(requirement_file)
 
@@ -153,31 +151,27 @@ def get_packages_info(requirement_file, no_deps=False):
         licenses = list(set([strip_license(l) for l in licenses]))
 
         return {
-            "name": dist.project_name,
+            "name": dist.name,
             "version": dist.version,
-            "location": dist.location,
-            "dependencies": [dependency.project_name for dependency in dist.requires()],
+            "dependencies": [Requirement(r).name for r in dist.requires] if dist.requires is not None else [],
             "licenses": licenses,
         }
 
     def get_license(dist):
-        if dist.has_metadata(dist.PKG_INFO):
-            metadata = dist.get_metadata(dist.PKG_INFO)
-            match = regex_license.search(metadata)
-            if match:
-                license = match.group("license")
-                if license != "UNKNOWN":  # Value when license not specified.
-                    return [license]
+        if dist.metadata is not None:
+            license = dist.metadata.get('License-Expression') or dist.metadata.get('License')
+            if license is not None:
+                return [license]
 
         return []
 
     def get_licenses_from_classifiers(dist):
-        if dist.has_metadata(dist.PKG_INFO):
-            metadata = dist.get_metadata(dist.PKG_INFO)
-
-            # match might be found, but None if using the classifier:
-            # License :: OSI Approved
-            return [m for m in regex_classifier.findall(metadata) if m]
+        if dist.metadata is not None:
+            classifiers = dist.metadata.get_all('Classifier')
+            if classifiers is not None:
+                # match might be found, but None if using the classifier:
+                # License :: OSI Approved
+                return [l.group(1) for l in [regex_classifier.match(m) for m in classifiers] if l]
 
         return []
 
@@ -191,11 +185,12 @@ def get_packages_info(requirement_file, no_deps=False):
             return license[: -len(" license")]
         return license
 
-    resolve_func = resolve_without_deps if no_deps else resolve
-    packages = [transform(dist) for dist in resolve_func(requirements)]
+    packages = [transform(dist) for dist in resolve(requirements, without_deps=no_deps)]
     # keep only unique values as there are maybe some duplicates
     unique = []
-    [unique.append(item) for item in packages if item not in unique]
+    for item in packages:
+        if item not in unique:
+            unique.append(item)
 
     return sorted(unique, key=(lambda item: item["name"].lower()))
 
