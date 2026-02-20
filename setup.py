@@ -76,7 +76,7 @@ setup(
 
     python_requires='>=3.5',
 
-    install_requires=['semantic_version>=2.7.0', 'toml'],
+    install_requires=['semantic_version>=2.7.0', 'toml', 'pip'],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
