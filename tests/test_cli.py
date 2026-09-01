@@ -51,9 +51,9 @@ def test_run(capsys):
     expected = textwrap.dedent(
         '''\
         gathering licenses...
-        3 packages and dependencies.
+        4 packages and dependencies.
         check authorized packages...
-        3 packages.
+        4 packages.
         '''
     )
     assert captured == expected
@@ -67,9 +67,9 @@ def test_run_without_deps(capsys):
     expected = textwrap.dedent(
         '''\
         gathering licenses...
-        3 packages.
+        4 packages.
         check authorized packages...
-        3 packages.
+        4 packages.
         '''
     )
     assert captured == expected

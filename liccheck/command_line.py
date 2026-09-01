@@ -3,6 +3,7 @@ import collections
 import os.path
 
 from liccheck.requirements import parse_requirements, resolve, resolve_without_deps
+from packaging.requirements import Requirement
 
 from configparser import ConfigParser, NoOptionError
 import enum
@@ -153,16 +154,21 @@ def get_packages_info(requirement_file, no_deps=False):
         licenses = list(set([strip_license(l) for l in licenses]))
 
         return {
-            "name": dist.project_name,
+            "name": dist.metadata["Name"],
             "version": dist.version,
-            "location": dist.location,
-            "dependencies": [dependency.project_name for dependency in dist.requires()],
+            "location": str(dist.locate_file("")),
+            "dependencies": [
+                Requirement(dependency).name for dependency in dist.requires or []
+            ],
             "licenses": licenses,
         }
 
+    def get_metadata_text(dist):
+        return dist.read_text("METADATA") or dist.read_text("PKG-INFO")
+
     def get_license(dist):
-        if dist.has_metadata(dist.PKG_INFO):
-            metadata = dist.get_metadata(dist.PKG_INFO)
+        metadata = get_metadata_text(dist)
+        if metadata:
             match = regex_license.search(metadata)
             if match:
                 license = match.group("license")
@@ -172,9 +178,8 @@ def get_packages_info(requirement_file, no_deps=False):
         return []
 
     def get_licenses_from_classifiers(dist):
-        if dist.has_metadata(dist.PKG_INFO):
-            metadata = dist.get_metadata(dist.PKG_INFO)
-
+        metadata = get_metadata_text(dist)
+        if metadata:
             # match might be found, but None if using the classifier:
             # License :: OSI Approved
             return [m for m in regex_classifier.findall(metadata) if m]
